@@ -11,6 +11,8 @@ function initColoring() {
     if (!canvas) return;
     
     ctx = canvas.getContext('2d');
+    App.canvas = canvas;
+    App.ctx = ctx;
     
     initColorPalette();
     initCanvasEvents();
@@ -352,8 +354,9 @@ function calculate() {
     
     App.showLoading('Анализ раскраски...');
     
-    const age = calculateAge(App.state.userData.birthDate);
-    const birthDate = new Date(App.state.userData.birthDate);
+    const birthDateStr = App.state.userData.birthDate;
+    const birthDate = birthDateStr ? new Date(birthDateStr) : new Date();
+    const age = birthDateStr ? calculateAge(birthDateStr) : 25;
     const zodiacSign = getZodiacSign(birthDate.getDate(), birthDate.getMonth() + 1);
     
     const requestData = {
@@ -363,7 +366,7 @@ function calculate() {
                 percentage: s.percentage
             })),
             age: age,
-            gender: App.state.userData.gender,
+            gender: App.state.userData.gender || 'male',
             zodiac_sign: zodiacSign
         },
         version: 1
@@ -564,6 +567,3 @@ App.loadImageFromFile = function(image) {
 
     img.src = image.filename;
 };
-
-App.ctx = ctx;
-App.canvas = canvas;
