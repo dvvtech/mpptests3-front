@@ -83,36 +83,31 @@
     </div>
 
     <div id="results-panel" class="hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4 md:p-6 z-40 max-h-[60vh] overflow-y-auto">
-        <div class="max-w-4xl mx-auto">
-            <div class="flex flex-col md:flex-row gap-6">
-                <div class="flex-shrink-0">
-                    <canvas id="result-canvas" width="300" height="400"></canvas>
+        <div class="max-w-2xl mx-auto">
+            <div class="flex-1">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Результаты анализа</h3>
+                
+                <div id="color-stats" class="mb-4">
+                    <h4 class="font-semibold text-gray-700 mb-2">Статистика цветов:</h4>
+                    <div id="color-bars"></div>
                 </div>
-                <div class="flex-1 max-h-80 overflow-y-auto">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">Результаты анализа</h3>
+                
+                <div id="analysis-results">
+                    <h4 class="font-semibold text-gray-700 mb-2">Характеристика:</h4>
+                    <p id="main-characteristic" class="text-gray-600 mb-3"></p>
                     
-                    <div id="color-stats" class="mb-4">
-                        <h4 class="font-semibold text-gray-700 mb-2">Статистика цветов:</h4>
-                        <div id="color-bars"></div>
-                    </div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Сильные стороны:</h4>
+                    <p id="strengths" class="text-gray-600 mb-3"></p>
                     
-                    <div id="analysis-results">
-                        <h4 class="font-semibold text-gray-700 mb-2">Характеристика:</h4>
-                        <p id="main-characteristic" class="text-gray-600 mb-3"></p>
-                        
-                        <h4 class="font-semibold text-gray-700 mb-2">Сильные стороны:</h4>
-                        <p id="strengths" class="text-gray-600 mb-3"></p>
-                        
-                        <h4 class="font-semibold text-gray-700 mb-2">Рекомендации:</h4>
-                        <p id="recommendations" class="text-gray-600 mb-4"></p>
-                    </div>
-                    
-                    <button id="btn-send-email" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition">
-                        <i class="fas fa-envelope mr-2"></i>Отправить результаты на почту
-                    </button>
+                    <h4 class="font-semibold text-gray-700 mb-2">Рекомендации:</h4>
+                    <p id="recommendations" class="text-gray-600 mb-4"></p>
                 </div>
+                
+                <button id="btn-send-email" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition mb-3">
+                    <i class="fas fa-envelope mr-2"></i>Отправить результаты на почту
+                </button>
             </div>
-            <button id="btn-close-results" class="mt-4 w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition">
+            <button id="btn-close-results" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition">
                 Закрыть результаты
             </button>
         </div>

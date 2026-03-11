@@ -391,7 +391,6 @@ function showResults(stats, response) {
     const mainCharacteristic = document.getElementById('main-characteristic');
     const strengths = document.getElementById('strengths');
     const recommendations = document.getElementById('recommendations');
-    const resultCanvas = document.getElementById('result-canvas');
     
     if (!resultsPanel) return;
     
@@ -419,13 +418,6 @@ function showResults(stats, response) {
     }
     if (recommendations) {
         recommendations.textContent = response.recommendations || 'Данные недоступны';
-    }
-    
-    if (resultCanvas && canvas) {
-        const resultCtx = resultCanvas.getContext('2d');
-        resultCtx.fillStyle = BACKGROUND_COLOR;
-        resultCtx.fillRect(0, 0, resultCanvas.width, resultCanvas.height);
-        resultCtx.drawImage(canvas, 0, 0, resultCanvas.width, resultCanvas.height);
     }
     
     resultsPanel.classList.remove('hidden');
