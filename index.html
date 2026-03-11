@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Медико-педагого-психологические тесты Яшара Ибадова</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="settings"></div>
+    <div id="coloring" class="hidden"></div>
+
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 flex flex-col items-center">
+            <i class="fas fa-spinner fa-spin text-3xl text-blue-500 mb-3"></i>
+            <span id="loading-text" class="text-gray-700">Загрузка...</span>
+        </div>
+    </div>
+
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+            <h3 id="modal-title" class="text-lg font-semibold mb-4"></h3>
+            <p id="modal-message" class="text-gray-600 mb-6"></p>
+            <div id="modal-buttons" class="flex justify-end gap-3"></div>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/canvas.js"></script>
+    <script src="js/statistics.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        async function loadComponent(id, file) {
+            const response = await fetch(file);
+            const content = await response.text();
+            document.getElementById(id).innerHTML = content;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadComponent("settings", "settings.html").then(() => {
+                if (typeof initSettings === 'function') {
+                    initSettings();
+                }
+            });
+            loadComponent("coloring", "coloring.html").then(() => {
+                if (typeof initColoring === 'function') {
+                    initColoring();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
