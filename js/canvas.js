@@ -3,8 +3,11 @@ let ctx = null;
 let isDrawing = false;
 let lastX = 0;
 let lastY = 0;
+let isPanning = false;
 let panStartX = 0;
 let panStartY = 0;
+let panStartOffsetX = 0;
+let panStartOffsetY = 0;
 
 function initColoring() {
     canvas = document.getElementById('coloring-canvas');
@@ -51,27 +54,27 @@ function initColorPalette() {
             document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             App.state.currentColor = color.hex;
-            document.getElementById('canvas-wrapper').classList.remove('panning');
-            App.state.isPanning = false;
+            if (App.state.isPanning) {
+                App.state.isPanning = false;
+                document.getElementById('canvas-wrapper')?.classList.remove('panning');
+                document.getElementById('btn-pan')?.classList.remove('bg-blue-200');
+            }
         });
         palette.appendChild(btn);
     });
 }
 
 function initCanvasEvents() {
-    const canvasWrapper = document.getElementById('canvas-wrapper');
-    const canvasContainer = document.getElementById('canvas-container');
+    if (!canvas) return;
     
-    if (!canvas || !canvasWrapper) return;
+    canvas.addEventListener('mousedown', onPointerDown);
+    canvas.addEventListener('mousemove', onPointerMove);
+    canvas.addEventListener('mouseup', onPointerUp);
+    canvas.addEventListener('mouseleave', onPointerUp);
     
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseout', stopDrawing);
-    
-    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-    canvas.addEventListener('touchend', stopDrawing);
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+    canvas.addEventListener('touchend', onTouchEnd);
     
     const brushSizeInput = document.getElementById('brush-size');
     const brushSizeValue = document.getElementById('brush-size-value');
@@ -81,140 +84,176 @@ function initCanvasEvents() {
             brushSizeValue.textContent = e.target.value;
         });
     }
-}
-
-function handleTouchStart(e) {
-    e.preventDefault();
-    const touch = e.touches[0];
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
     
-    lastX = (touch.clientX - rect.left) * scaleX;
-    lastY = (touch.clientY - rect.top) * scaleY;
-    isDrawing = true;
-    
-    if (App.state.isPanning) {
-        panStartX = touch.clientX;
-        panStartY = touch.clientY;
+    const wrapper = document.getElementById('canvas-wrapper');
+    if (wrapper) {
+        wrapper.addEventListener('wheel', onWheel, { passive: false });
     }
 }
 
-function handleTouchMove(e) {
-    e.preventDefault();
-    if (!isDrawing) return;
-    
-    const touch = e.touches[0];
+function getCanvasPos(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
     
-    const currentX = (touch.clientX - rect.left) * scaleX;
-    const currentY = (touch.clientY - rect.top) * scaleY;
+    const screenCenterX = rect.left + rect.width / 2;
+    const screenCenterY = rect.top + rect.height / 2;
+    
+    let dx = clientX - screenCenterX;
+    let dy = clientY - screenCenterY;
+    
+    const angle = App.state.rotation % 360;
+    if (angle !== 0) {
+        const rad = -angle * Math.PI / 180;
+        const rdx = dx * Math.cos(rad) - dy * Math.sin(rad);
+        const rdy = dx * Math.sin(rad) + dy * Math.cos(rad);
+        dx = rdx;
+        dy = rdy;
+    }
+    
+    const s = App.state.scale;
+    dx /= s;
+    dy /= s;
+    
+    const x = canvas.width / 2 + dx;
+    const y = canvas.height / 2 + dy;
+    
+    return { x, y };
+}
+
+function onPointerDown(e) {
+    e.preventDefault();
     
     if (App.state.isPanning) {
-        const deltaX = touch.clientX - panStartX;
-        const deltaY = touch.clientY - panStartY;
-        panStartX = touch.clientX;
-        panStartY = touch.clientY;
-        
-        const container = document.getElementById('canvas-container');
-        const wrapper = document.getElementById('canvas-wrapper');
-        if (container && wrapper) {
-            const currentTransform = wrapper.style.transform || '';
-            const translateMatch = currentTransform.match(/translate\(([^,]+),\s*([^)]+)\)/);
-            let currentX = 0, currentY = 0;
-            if (translateMatch) {
-                currentX = parseFloat(translateMatch[1]);
-                currentY = parseFloat(translateMatch[2]);
-            }
-            wrapper.style.transform = `translate(${currentX + deltaX}px, ${currentY + deltaY}px) scale(${App.state.scale}) rotate(${App.state.rotation}deg)`;
-        }
+        isPanning = true;
+        panStartX = e.clientX;
+        panStartY = e.clientY;
+        panStartOffsetX = App.state.offsetX;
+        panStartOffsetY = App.state.offsetY;
     } else {
-        drawLine(lastX, lastY, currentX, currentY);
+        isDrawing = true;
+        const pos = getCanvasPos(e.clientX, e.clientY);
+        lastX = pos.x;
+        lastY = pos.y;
+        drawDot(pos.x, pos.y);
     }
-    
-    lastX = currentX;
-    lastY = currentY;
 }
 
-function startDrawing(e) {
-    isDrawing = true;
+function onPointerMove(e) {
+    e.preventDefault();
     
-    if (App.state.isPanning) {
-        panStartX = e.clientX;
-        panStartY = e.clientY;
-        return;
+    if (App.state.isPanning && isPanning) {
+        const dx = e.clientX - panStartX;
+        const dy = e.clientY - panStartY;
+        App.state.offsetX = panStartOffsetX + dx;
+        App.state.offsetY = panStartOffsetY + dy;
+        applyTransform();
+    } else if (isDrawing) {
+        const pos = getCanvasPos(e.clientX, e.clientY);
+        drawLine(lastX, lastY, pos.x, pos.y);
+        lastX = pos.x;
+        lastY = pos.y;
     }
-    
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    
-    lastX = (e.clientX - rect.left) * scaleX;
-    lastY = (e.clientY - rect.top) * scaleY;
 }
 
-function draw(e) {
-    if (!isDrawing) return;
-    
-    if (App.state.isPanning) {
-        const deltaX = e.clientX - panStartX;
-        const deltaY = e.clientY - panStartY;
-        panStartX = e.clientX;
-        panStartY = e.clientY;
-        
-        const wrapper = document.getElementById('canvas-wrapper');
-        if (wrapper) {
-            const currentTransform = wrapper.style.transform || '';
-            const translateMatch = currentTransform.match(/translate\(([^,]+),\s*([^)]+)\)/);
-            let currentX = 0, currentY = 0;
-            if (translateMatch) {
-                currentX = parseFloat(translateMatch[1]);
-                currentY = parseFloat(translateMatch[2]);
-            }
-            wrapper.style.transform = `translate(${currentX + deltaX}px, ${currentY + deltaY}px) scale(${App.state.scale}) rotate(${App.state.rotation}deg)`;
-        }
-        return;
-    }
-    
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    
-    const currentX = (e.clientX - rect.left) * scaleX;
-    const currentY = (e.clientY - rect.top) * scaleY;
-    
-    drawLine(lastX, lastY, currentX, currentY);
-    
-    lastX = currentX;
-    lastY = currentY;
-}
-
-function drawLine(x1, y1, x2, y2) {
-    ctx.beginPath();
-    ctx.strokeStyle = App.state.currentColor;
-    ctx.lineWidth = App.state.brushSize;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-}
-
-function stopDrawing() {
+function onPointerUp(e) {
     if (isDrawing) {
         isDrawing = false;
         App.saveState();
     }
+    isPanning = false;
+}
+
+function onTouchStart(e) {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        if (App.state.isPanning) {
+            isPanning = true;
+            panStartX = touch.clientX;
+            panStartY = touch.clientY;
+            panStartOffsetX = App.state.offsetX;
+            panStartOffsetY = App.state.offsetY;
+        } else {
+            isDrawing = true;
+            const pos = getCanvasPos(touch.clientX, touch.clientY);
+            lastX = pos.x;
+            lastY = pos.y;
+            drawDot(pos.x, pos.y);
+        }
+    }
+}
+
+function onTouchMove(e) {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        if (App.state.isPanning && isPanning) {
+            const dx = touch.clientX - panStartX;
+            const dy = touch.clientY - panStartY;
+            App.state.offsetX = panStartOffsetX + dx;
+            App.state.offsetY = panStartOffsetY + dy;
+            applyTransform();
+        } else if (isDrawing) {
+            const pos = getCanvasPos(touch.clientX, touch.clientY);
+            drawLine(lastX, lastY, pos.x, pos.y);
+            lastX = pos.x;
+            lastY = pos.y;
+        }
+    }
+}
+
+function onTouchEnd(e) {
+    if (isDrawing) {
+        isDrawing = false;
+        App.saveState();
+    }
+    isPanning = false;
+}
+
+function onWheel(e) {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    zoomBy(delta);
+}
+
+function drawDot(x, y) {
+    ctx.beginPath();
+    ctx.arc(x, y, App.state.brushSize / 2, 0, Math.PI * 2);
+    ctx.fillStyle = App.state.currentColor;
+    ctx.fill();
+}
+
+function drawLine(x1, y1, x2, y2) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = App.state.currentColor;
+    ctx.lineWidth = App.state.brushSize;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+}
+
+function applyTransform() {
+    if (!canvas) return;
+    
+    const s = App.state.scale;
+    const ox = App.state.offsetX;
+    const oy = App.state.offsetY;
+    const rot = App.state.rotation;
+    
+    canvas.style.transform = `translate(${ox}px, ${oy}px) rotate(${rot}deg) scale(${s})`;
+    canvas.style.transformOrigin = 'center center';
+    
+    const zoomLevel = document.getElementById('zoom-level');
+    if (zoomLevel) zoomLevel.textContent = Math.round(s * 100) + '%';
 }
 
 function initToolButtons() {
     document.getElementById('btn-home')?.addEventListener('click', goToHome);
     document.getElementById('btn-rotate-left')?.addEventListener('click', () => rotate(-90));
     document.getElementById('btn-rotate-right')?.addEventListener('click', () => rotate(90));
-    document.getElementById('btn-zoom-in')?.addEventListener('click', () => zoom(0.1));
-    document.getElementById('btn-zoom-out')?.addEventListener('click', () => zoom(-0.1));
+    document.getElementById('btn-zoom-in')?.addEventListener('click', () => zoomBy(0.1));
+    document.getElementById('btn-zoom-out')?.addEventListener('click', () => zoomBy(-0.1));
     document.getElementById('btn-undo')?.addEventListener('click', undo);
     document.getElementById('btn-redo')?.addEventListener('click', redo);
     document.getElementById('btn-pan')?.addEventListener('click', togglePan);
@@ -246,24 +285,14 @@ function goToHome() {
 }
 
 function rotate(degrees) {
-    App.state.rotation += degrees;
-    const wrapper = document.getElementById('canvas-wrapper');
-    if (wrapper) {
-        wrapper.style.transform = `scale(${App.state.scale}) rotate(${App.state.rotation}deg)`;
-    }
+    App.state.rotation = (App.state.rotation + degrees + 360) % 360;
+    applyTransform();
 }
 
-function zoom(delta) {
-    App.state.scale = Math.max(0.5, Math.min(3, App.state.scale + delta));
-    const wrapper = document.getElementById('canvas-wrapper');
-    if (wrapper) {
-        wrapper.style.transform = `scale(${App.state.scale}) rotate(${App.state.rotation}deg)`;
-    }
-    
-    const zoomLevel = document.getElementById('zoom-level');
-    if (zoomLevel) {
-        zoomLevel.textContent = Math.round(App.state.scale * 100) + '%';
-    }
+function zoomBy(delta) {
+    const newScale = Math.min(Math.max(App.state.scale + delta, 0.2), 5);
+    App.state.scale = Math.round(newScale * 10) / 10;
+    applyTransform();
 }
 
 function undo() {
@@ -310,16 +339,11 @@ function togglePan() {
 }
 
 function centerCanvas() {
-    App.state.rotation = 0;
     App.state.scale = 1;
-    
-    const wrapper = document.getElementById('canvas-wrapper');
-    if (wrapper) {
-        wrapper.style.transform = '';
-    }
-    
-    const zoomLevel = document.getElementById('zoom-level');
-    if (zoomLevel) zoomLevel.textContent = '100%';
+    App.state.offsetX = 0;
+    App.state.offsetY = 0;
+    App.state.rotation = 0;
+    applyTransform();
 }
 
 function clearCanvas() {
@@ -495,27 +519,10 @@ App.drawPlaceholderImage = function() {
     this.ctx.font = '20px Arial';
     this.ctx.fillStyle = '#6b7280';
     this.ctx.fillText('Вернитесь на страницу настроек', this.canvas.width / 2, this.canvas.height / 2 + 30);
-
-    this.hideImageLoading();
-};
-
-App.hideImageLoading = function() {
-    const loading = document.getElementById('image-loading');
-    if (loading) {
-        loading.classList.add('hidden');
-    }
-};
-
-App.showImageLoading = function() {
-    const loading = document.getElementById('image-loading');
-    if (loading) {
-        loading.classList.remove('hidden');
-    }
 };
 
 App.loadImageFromFile = function(image) {
     this.showLoading('Загрузка теста...');
-    this.showImageLoading();
 
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -524,23 +531,17 @@ App.loadImageFromFile = function(image) {
         this.state.loadedImages[image.filename] = img;
         this.state.rotation = 0;
         this.state.scale = 1;
+        this.state.offsetX = 0;
+        this.state.offsetY = 0;
 
-        const wrapper = document.getElementById('canvas-wrapper');
-        if (wrapper) {
-            wrapper.style.transform = '';
-        }
-
+        applyTransform();
         this.drawImageOnCanvas(img);
         this.saveState();
         this.state.undoStack = [];
         this.state.redoStack = [];
         this.updateUndoRedoButtons();
 
-        const zoomLevel = document.getElementById('zoom-level');
-        if (zoomLevel) zoomLevel.textContent = '100%';
-
         this.hideLoading();
-        this.hideImageLoading();
     };
 
     img.onerror = () => {
@@ -552,7 +553,6 @@ App.loadImageFromFile = function(image) {
         this.updateUndoRedoButtons();
 
         this.hideLoading();
-        this.hideImageLoading();
 
         this.showError('Не удалось загрузить изображение');
     };

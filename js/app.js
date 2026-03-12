@@ -34,6 +34,8 @@ const App = {
         redoStack: [],
         rotation: 0,
         scale: 1,
+        offsetX: 0,
+        offsetY: 0,
         isPanning: false,
         currentColor: '#ef4444',
         brushSize: 15,
