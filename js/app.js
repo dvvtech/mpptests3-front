@@ -33,7 +33,7 @@ const App = {
         undoStack: [],
         redoStack: [],
         rotation: 0,
-        scale: 1,
+        scale: 0.9,
         offsetX: 0,
         offsetY: 0,
         isPanning: false,
