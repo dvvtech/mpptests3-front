@@ -285,7 +285,7 @@ function goToHome() {
 }
 
 function rotate(degrees) {
-    App.state.rotation = (App.state.rotation + degrees + 360) % 360;
+    App.state.rotation = App.state.rotation + degrees;
     applyTransform();
 }
 
