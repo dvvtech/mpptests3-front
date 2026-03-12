@@ -27,9 +27,6 @@ body {
     height: 24px;
     background: #3b82f6;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .image-item.selected::before {
@@ -42,6 +39,10 @@ body {
     color: white;
     font-size: 12px;
     z-index: 10;
+}
+
+.image-preview {
+    height: 140px;
 }
 
 .color-btn {
@@ -126,12 +127,12 @@ body {
     }
     
     .image-preview {
-        height: 120px !important;
+        height: 120px;
     }
 }
 
 @media (max-width: 480px) {
     .image-preview {
-        height: 100px !important;
+        height: 100px;
     }
 }

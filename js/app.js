@@ -219,7 +219,7 @@ function initImageSelector() {
         imgElement.className = 'image-item border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:border-blue-400 transition duration-200 relative';
         imgElement.dataset.imageId = image.id;
         imgElement.innerHTML = `
-            <div class="h-48 flex items-center justify-center image-preview" 
+            <div class="flex items-center justify-center image-preview" 
                  data-filename="${image.filename}" 
                  data-thumbnail="${image.thumbnail}"
                  data-index="${index}"
@@ -257,6 +257,9 @@ function initImageSelector() {
             imgElement.classList.add('selected');
             selectedTest = image;
             App.state.selectedTest = image;
+            
+            const testError = document.getElementById('test-error');
+            if (testError) testError.classList.add('hidden');
         });
         
         imageSelector.appendChild(imgElement);
@@ -267,6 +270,11 @@ function initImageSelector() {
         const savedItem = document.querySelector(`[data-image-id="${savedData.selectedTestId}"]`);
         if (savedItem) {
             savedItem.classList.add('selected');
+            const savedTest = appConfig.images.find(img => img.id === savedData.selectedTestId);
+            if (savedTest) {
+                selectedTest = savedTest;
+                App.state.selectedTest = savedTest;
+            }
         }
     }
 }
@@ -317,6 +325,31 @@ function initSettings() {
         if (birthDateInput && savedData.birthDate) {
             birthDateInput.value = savedData.birthDate;
         }
+        
+        if (savedData.selectedTestId) {
+            const savedTest = appConfig.images.find(img => img.id === savedData.selectedTestId);
+            if (savedTest) {
+                selectedTest = savedTest;
+                App.state.selectedTest = savedTest;
+            }
+        }
+    }
+    
+    const genderSelect = document.getElementById('gender');
+    const birthDateInput = document.getElementById('birthDate');
+    
+    if (genderSelect) {
+        genderSelect.addEventListener('change', () => {
+            const error = document.getElementById('gender-error');
+            if (error) error.classList.add('hidden');
+        });
+    }
+    
+    if (birthDateInput) {
+        birthDateInput.addEventListener('change', () => {
+            const error = document.getElementById('birthdate-error');
+            if (error) error.classList.add('hidden');
+        });
     }
     
     const btnNext = document.getElementById('btn-next');
@@ -324,12 +357,9 @@ function initSettings() {
         btnNext.addEventListener('click', () => {
             const validation = Utils.validateSettings();
             
-            if (!validation.isValid) {
-                App.showModal('Внимание', validation.errors.join('. '), [{ text: 'OK' }]);
-                return;
+            if (validation.isValid) {
+                Utils.goToColoring();
             }
-            
-            Utils.goToColoring();
         });
     }
 }

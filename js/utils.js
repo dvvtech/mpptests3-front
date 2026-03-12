@@ -3,24 +3,32 @@ const Utils = {
         const gender = document.getElementById('gender')?.value;
         const birthDate = document.getElementById('birthDate')?.value;
         
-        const errors = [];
+        let isValid = true;
+        
+        const genderError = document.getElementById('gender-error');
+        const birthdateError = document.getElementById('birthdate-error');
+        const testError = document.getElementById('test-error');
+        
+        if (genderError) genderError.classList.add('hidden');
+        if (birthdateError) birthdateError.classList.add('hidden');
+        if (testError) testError.classList.add('hidden');
         
         if (!gender) {
-            errors.push('Выберите пол');
+            if (genderError) genderError.classList.remove('hidden');
+            isValid = false;
         }
         
         if (!birthDate) {
-            errors.push('Укажите дату рождения');
+            if (birthdateError) birthdateError.classList.remove('hidden');
+            isValid = false;
         }
         
         if (!selectedTest && !App.state.selectedTest) {
-            errors.push('Выберите тест для раскрашивания');
+            if (testError) testError.classList.remove('hidden');
+            isValid = false;
         }
         
-        return {
-            isValid: errors.length === 0,
-            errors: errors
-        };
+        return { isValid: isValid };
     },
     
     goToColoring: function() {
