@@ -130,9 +130,12 @@ body {
     max-width: 400px;
     background: white;
     border-left: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+#results-panel:not(.hidden) {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
 }
 
 @media (max-width: 768px) {
