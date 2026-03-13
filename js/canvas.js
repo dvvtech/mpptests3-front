@@ -174,7 +174,7 @@ function onPointerUp(e) {
 }
 
 function onTouchStart(e) {
-    if (e.touches.length === 2) {
+    if (e.touches.length === 2 && App.state.isPanning) {
         e.preventDefault();
         isDrawing = false;
         const dx = e.touches[0].clientX - e.touches[1].clientX;
@@ -201,7 +201,7 @@ function onTouchStart(e) {
 }
 
 function onTouchMove(e) {
-    if (e.touches.length === 2) {
+    if (e.touches.length === 2 && App.state.isPanning) {
         e.preventDefault();
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
