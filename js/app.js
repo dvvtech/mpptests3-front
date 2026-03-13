@@ -149,6 +149,24 @@ function getZodiacSign(day, month) {
     return 'capricorn';
 }
 
+function getZodiacNameRu(sign) {
+    const names = {
+        'capricorn': 'Козерог',
+        'aquarius': 'Водолей',
+        'pisces': 'Рыбы',
+        'aries': 'Овен',
+        'taurus': 'Телец',
+        'gemini': 'Близнецы',
+        'cancer': 'Рак',
+        'leo': 'Лев',
+        'virgo': 'Дева',
+        'libra': 'Весы',
+        'scorpio': 'Скорпион',
+        'sagittarius': 'Стрелец'
+    };
+    return names[sign] || sign;
+}
+
 function calculateAge(birthDate) {
     const today = new Date();
     const birth = new Date(birthDate);

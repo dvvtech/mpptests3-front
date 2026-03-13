@@ -383,6 +383,12 @@ function calculate() {
     const age = birthDateStr ? calculateAge(birthDateStr) : 25;
     const zodiacSign = getZodiacSign(birthDate.getDate(), birthDate.getMonth() + 1);
     
+    const meta = {
+        gender: App.state.userData.gender || 'male',
+        age: age,
+        birthdate: birthDateStr
+    };
+    
     const requestData = {
         user_color: {
             colors: stats.map(s => ({
@@ -399,52 +405,86 @@ function calculate() {
     sendAnalysisRequest(requestData)
         .then(response => {
             App.hideLoading();
-            showResults(stats, response);
+            showResults(stats, response, meta);
         })
         .catch(error => {
             App.hideLoading();
             console.error('API Error:', error);
             const demoResponse = getDemoResponse();
-            showResults(stats, demoResponse);
+            showResults(stats, demoResponse, meta);
         });
 }
 
-function showResults(stats, response) {
-    const resultsPanel = document.getElementById('results-panel');
-    const colorBars = document.getElementById('color-bars');
-    const mainCharacteristic = document.getElementById('main-characteristic');
-    const strengths = document.getElementById('strengths');
-    const recommendations = document.getElementById('recommendations');
-    
-    if (!resultsPanel) return;
-    
-    if (colorBars) {
-        colorBars.innerHTML = '';
-        stats.forEach(stat => {
-            const container = document.createElement('div');
-            container.className = 'color-bar-container';
-            container.innerHTML = `
-                <span class="color-bar-name">${stat.name}</span>
-                <div class="color-bar-wrapper">
-                    <div class="color-bar" style="width: ${stat.percentage}%; background-color: ${stat.hex};"></div>
-                </div>
-                <span class="color-bar-percent">${stat.percentage.toFixed(1)}%</span>
-            `;
-            colorBars.appendChild(container);
-        });
-    }
-    
-    if (mainCharacteristic) {
-        mainCharacteristic.textContent = response.main_characteristic || 'Данные недоступны';
-    }
-    if (strengths) {
-        strengths.textContent = response.strengths || 'Данные недоступны';
-    }
-    if (recommendations) {
-        recommendations.textContent = response.recommendations || 'Данные недоступны';
-    }
-    
-    resultsPanel.classList.remove('hidden');
+function showResults(stats, data, meta) {
+    const panel = document.getElementById('results-panel');
+    const scroll = document.getElementById('results-scroll');
+    if (!panel || !scroll) return;
+
+    const chartHtml = stats.map(c => `
+        <div class="color-bar-row">
+            <span class="color-bar-label">${c.name}</span>
+            <div class="color-bar-track">
+                <div class="color-bar-fill" style="width:${c.percentage.toFixed(1)}%; background-color:${c.hex};"></div>
+            </div>
+            <span class="color-bar-pct">${c.percentage.toFixed(1)}%</span>
+        </div>
+    `).join('');
+
+    const strengthsHtml = Array.isArray(data.strengths)
+        ? data.strengths.map(s => `<li class="text-sm text-gray-700">${s}</li>`).join('')
+        : (data.strengths ? `<li class="text-sm text-gray-700">${data.strengths}</li>` : '');
+
+    const recsHtml = Array.isArray(data.recommendations)
+        ? data.recommendations.map(r => `<li class="text-sm text-gray-700">${r}</li>`).join('')
+        : (data.recommendations ? `<li class="text-sm text-gray-700">${data.recommendations}</li>` : '');
+
+    const zodiacRu = getZodiacNameRu(getZodiacSign(new Date(meta.birthdate).getDate(), new Date(meta.birthdate).getMonth() + 1));
+    const genderRu = meta.gender === 'male' ? 'Мужской' : 'Женский';
+
+    scroll.innerHTML = `
+        <div class="mb-4">
+            <h3 class="text-base font-semibold text-gray-800 mb-2">Данные пользователя</h3>
+            <div class="text-sm text-gray-600 space-y-1">
+                <div><span class="font-medium">Пол:</span> ${genderRu}</div>
+                <div><span class="font-medium">Возраст:</span> ${meta.age} лет</div>
+                <div><span class="font-medium">Знак зодиака:</span> ${zodiacRu}</div>
+                <div><span class="font-medium">Тест:</span> ${App.state.selectedTest ? App.state.selectedTest.name : '—'}</div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h3 class="text-base font-semibold text-gray-800 mb-2">Использованные цвета</h3>
+            ${chartHtml}
+        </div>
+
+        ${data.main_characteristic ? `
+        <div class="mb-4">
+            <h3 class="text-base font-semibold text-gray-800 mb-2">Характеристика</h3>
+            <p class="text-sm text-gray-700 leading-relaxed">${data.main_characteristic}</p>
+        </div>` : ''}
+
+        ${strengthsHtml ? `
+        <div class="mb-4">
+            <h3 class="text-base font-semibold text-gray-800 mb-2">Сильные стороны</h3>
+            <ul class="list-disc list-inside space-y-1">${strengthsHtml}</ul>
+        </div>` : ''}
+
+        ${recsHtml ? `
+        <div class="mb-4">
+            <h3 class="text-base font-semibold text-gray-800 mb-2">Рекомендации</h3>
+            <ul class="list-disc list-inside space-y-1">${recsHtml}</ul>
+        </div>` : ''}
+
+        <button id="btn-send-email"
+            class="w-full mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-2">
+            <i class="fas fa-envelope"></i> Отправить на почту
+        </button>
+    `;
+
+    const emailBtn = document.getElementById('btn-send-email');
+    if (emailBtn) emailBtn.addEventListener('click', sendEmail);
+
+    panel.classList.remove('hidden');
 }
 
 function closeResults() {

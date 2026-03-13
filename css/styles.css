@@ -91,37 +91,40 @@ body {
     transform-origin: center center;
 }
 
-.color-bar-container {
+.color-bar-row {
     display: flex;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
-.color-bar-name {
-    width: 100px;
-    font-size: 14px;
+.color-bar-label {
+    width: 80px;
+    font-size: 13px;
     color: #4b5563;
+    flex-shrink: 0;
 }
 
-.color-bar-wrapper {
+.color-bar-track {
     flex: 1;
-    height: 20px;
+    height: 18px;
     background: #e5e7eb;
     border-radius: 4px;
     overflow: hidden;
     margin: 0 8px;
 }
 
-.color-bar {
+.color-bar-fill {
     height: 100%;
     transition: width 0.3s ease;
+    border-radius: 4px;
 }
 
-.color-bar-percent {
-    width: 50px;
-    font-size: 14px;
+.color-bar-pct {
+    width: 45px;
+    font-size: 13px;
     color: #4b5563;
     text-align: right;
+    flex-shrink: 0;
 }
 
 #results-panel {
