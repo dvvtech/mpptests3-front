@@ -124,7 +124,29 @@ body {
     text-align: right;
 }
 
+#results-panel {
+    width: 320px;
+    min-width: 280px;
+    max-width: 400px;
+    background: white;
+    border-left: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 @media (max-width: 768px) {
+    #results-panel {
+        width: 100%;
+        max-width: 100%;
+        border-left: none;
+        border-top: 1px solid #e5e7eb;
+        max-height: 40vh;
+    }
+
+    #work-area {
+        flex-direction: column;
+    }
     .color-btn {
         width: 24px;
         height: 24px;
