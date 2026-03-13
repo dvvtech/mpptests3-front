@@ -485,10 +485,12 @@ function showResults(stats, data, meta) {
     if (emailBtn) emailBtn.addEventListener('click', sendEmail);
 
     panel.classList.remove('hidden');
+    document.querySelector('#coloring-page > div:first-child')?.classList.add('hidden');
 }
 
 function closeResults() {
     document.getElementById('results-panel')?.classList.add('hidden');
+    document.querySelector('#coloring-page > div:first-child')?.classList.remove('hidden');
 }
 
 function sendEmail() {
