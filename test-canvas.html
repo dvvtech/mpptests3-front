@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Canvas Rotation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        #canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            border: 2px dashed #ccc;
+        }
+        #testCanvas {
+            border: 1px solid #333;
+            background: #f0f0f0;
+        }
+        #info {
+            margin-top: 20px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="rotate(-90)">Повернуть влево</button>
+        <button onclick="rotate(90)">Повернуть вправо</button>
+        <button onclick="resetTransform()">Сбросить</button>
+    </div>
+    
+    <div id="canvas-container">
+        <canvas id="testCanvas" width="785" height="1080"></canvas>
+    </div>
+    
+    <div id="info">
+        <p>Rotation: <span id="rotation">0</span>°</p>
+        <p>Canvas size: <span id="canvasSize">785 x 1080</span></p>
+        <p>Rect size: <span id="rectSize">-</span></p>
+        <p>Last click - Screen: <span id="screenPos">-</span></p>
+        <p>Last click - Canvas: <span id="canvasPos">-</span></p>
+        <p>Red dot shows where the click was mapped to</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('testCanvas');
+        const ctx = canvas.getContext('2d');
+        let rotation = 0;
+
+        // Draw test pattern
+        function drawPattern() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Background
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grid
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 1;
+            for (let x = 0; x <= canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Center cross
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2 - 50, canvas.height / 2);
+            ctx.lineTo(canvas.width / 2 + 50, canvas.height / 2);
+            ctx.moveTo(canvas.width / 2, canvas.height / 2 - 50);
+            ctx.lineTo(canvas.width / 2, canvas.height / 2 + 50);
+            ctx.stroke();
+            
+            // Corner markers
+            ctx.fillStyle = '#00ff00';
+            ctx.fillRect(0, 0, 30, 30);
+            ctx.fillStyle = '#0000ff';
+            ctx.fillRect(canvas.width - 30, 0, 30, 30);
+            ctx.fillStyle = '#ffff00';
+            ctx.fillRect(0, canvas.height - 30, 30, 30);
+            ctx.fillStyle = '#ff00ff';
+            ctx.fillRect(canvas.width - 30, canvas.height - 30, 30, 30);
+            
+            // Labels
+            ctx.fillStyle = '#000';
+            ctx.font = '20px Arial';
+            ctx.fillText('TL (0,0)', 40, 20);
+            ctx.fillText('TR', canvas.width - 80, 20);
+            ctx.fillText('BL', 40, canvas.height - 10);
+            ctx.fillText('BR', canvas.width - 80, canvas.height - 10);
+        }
+
+        function applyTransform() {
+            canvas.style.transform = `rotate(${rotation}deg)`;
+            canvas.style.transformOrigin = 'center center';
+            document.getElementById('rotation').textContent = rotation;
+            updateRectInfo();
+        }
+
+        function rotate(deg) {
+            rotation = (rotation + deg + 360) % 360;
+            applyTransform();
+        }
+
+        function resetTransform() {
+            rotation = 0;
+            applyTransform();
+        }
+
+        function updateRectInfo() {
+            const rect = canvas.getBoundingClientRect();
+            document.getElementById('rectSize').textContent = 
+                `${Math.round(rect.width)} x ${Math.round(rect.height)}`;
+        }
+
+        function getCanvasPos(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            if (!rect.width || !rect.height) {
+                return { x: 0, y: 0 };
+            }
+
+            const angle = ((rotation % 360) + 360) % 360;
+            
+            let x, y;
+            const rx = (clientX - rect.left) / rect.width;  // 0..1
+            const ry = (clientY - rect.top) / rect.height;  // 0..1
+
+            switch (angle) {
+                case 90:
+                    // Поворот вправо: верхний край видимого = низ исходного
+                    x = ry * canvas.width;
+                    y = (1 - rx) * canvas.height;
+                    break;
+                case 180:
+                    x = (1 - rx) * canvas.width;
+                    y = (1 - ry) * canvas.height;
+                    break;
+                case 270:
+                    // Поворот влево: верхний край видимого = верх исходного
+                    x = (1 - ry) * canvas.width;
+                    y = rx * canvas.height;
+                    break;
+                default:
+                    x = rx * canvas.width;
+                    y = ry * canvas.height;
+            }
+
+            return {
+                x: Math.max(0, Math.min(canvas.width, x)),
+                y: Math.max(0, Math.min(canvas.height, y))
+            };
+        }
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const screenX = e.clientX;
+            const screenY = e.clientY;
+            const localX = e.clientX - rect.left;
+            const localY = e.clientY - rect.top;
+            
+            const pos = getCanvasPos(e.clientX, e.clientY);
+            
+            document.getElementById('screenPos').textContent = 
+                `(${screenX}, ${screenY}) local: (${Math.round(localX)}, ${Math.round(localY)})`;
+            document.getElementById('canvasPos').textContent = 
+                `(${Math.round(pos.x)}, ${Math.round(pos.y)})`;
+            
+            // Draw red dot at calculated position
+            drawPattern();
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 3, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Initial draw
+        drawPattern();
+        updateRectInfo();
+        
+        window.addEventListener('resize', updateRectInfo);
+    </script>
+</body>
+</html>

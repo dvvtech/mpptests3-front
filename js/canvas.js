@@ -93,30 +93,38 @@ function initCanvasEvents() {
 
 function getCanvasPos(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
-    
-    const screenCenterX = rect.left + rect.width / 2;
-    const screenCenterY = rect.top + rect.height / 2;
-    
-    let dx = clientX - screenCenterX;
-    let dy = clientY - screenCenterY;
-    
-    const angle = App.state.rotation % 360;
-    if (angle !== 0) {
-        const rad = -angle * Math.PI / 180;
-        const rdx = dx * Math.cos(rad) - dy * Math.sin(rad);
-        const rdy = dx * Math.sin(rad) + dy * Math.cos(rad);
-        dx = rdx;
-        dy = rdy;
+    if (!rect.width || !rect.height) {
+        return { x: 0, y: 0 };
     }
+
+    const angle = ((App.state.rotation % 360) + 360) % 360;
     
-    const s = App.state.scale;
-    dx /= s;
-    dy /= s;
-    
-    const x = canvas.width / 2 + dx;
-    const y = canvas.height / 2 + dy;
-    
-    return { x, y };
+    let x, y;
+    const rx = (clientX - rect.left) / rect.width;
+    const ry = (clientY - rect.top) / rect.height;
+
+    switch (angle) {
+        case 90:
+            x = ry * canvas.width;
+            y = (1 - rx) * canvas.height;
+            break;
+        case 180:
+            x = (1 - rx) * canvas.width;
+            y = (1 - ry) * canvas.height;
+            break;
+        case 270:
+            x = (1 - ry) * canvas.width;
+            y = rx * canvas.height;
+            break;
+        default:
+            x = rx * canvas.width;
+            y = ry * canvas.height;
+    }
+
+    return {
+        x: Math.max(0, Math.min(canvas.width, x)),
+        y: Math.max(0, Math.min(canvas.height, y))
+    };
 }
 
 function onPointerDown(e) {
