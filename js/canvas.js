@@ -8,6 +8,8 @@ let panStartX = 0;
 let panStartY = 0;
 let panStartOffsetX = 0;
 let panStartOffsetY = 0;
+let initialPinchDistance = 0;
+let initialPinchScale = 1;
 
 function initColoring() {
     canvas = document.getElementById('coloring-canvas');
@@ -172,8 +174,15 @@ function onPointerUp(e) {
 }
 
 function onTouchStart(e) {
-    e.preventDefault();
-    if (e.touches.length === 1) {
+    if (e.touches.length === 2) {
+        e.preventDefault();
+        isDrawing = false;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
+        initialPinchScale = App.state.scale;
+    } else if (e.touches.length === 1) {
+        e.preventDefault();
         const touch = e.touches[0];
         if (App.state.isPanning) {
             isPanning = true;
@@ -192,8 +201,17 @@ function onTouchStart(e) {
 }
 
 function onTouchMove(e) {
-    e.preventDefault();
-    if (e.touches.length === 1) {
+    if (e.touches.length === 2) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const scale = initialPinchScale * (distance / initialPinchDistance);
+        App.state.scale = Math.min(Math.max(scale, 0.2), 5);
+        App.state.scale = Math.round(App.state.scale * 10) / 10;
+        applyTransform();
+    } else if (e.touches.length === 1) {
+        e.preventDefault();
         const touch = e.touches[0];
         if (App.state.isPanning && isPanning) {
             const dx = touch.clientX - panStartX;
@@ -211,11 +229,16 @@ function onTouchMove(e) {
 }
 
 function onTouchEnd(e) {
-    if (isDrawing) {
-        isDrawing = false;
-        App.saveState();
+    if (e.touches.length < 2) {
+        initialPinchDistance = 0;
     }
-    isPanning = false;
+    if (e.touches.length === 0) {
+        if (isDrawing) {
+            isDrawing = false;
+            App.saveState();
+        }
+        isPanning = false;
+    }
 }
 
 function onWheel(e) {
