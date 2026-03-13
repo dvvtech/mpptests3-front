@@ -46,7 +46,8 @@ function initColorPalette() {
     
     appConfig.colors.forEach((color, index) => {
         const btn = document.createElement('button');
-        btn.className = 'color-btn' + (index === 0 ? ' selected' : '');
+        const isWhite = color.hex.toLowerCase() === '#ffffff' || color.hex.toLowerCase() === 'white';
+        btn.className = 'color-btn border border-gray-300' + (index === 0 ? ' selected' : '');
         btn.style.backgroundColor = color.hex;
         btn.title = color.name;
         btn.dataset.color = color.hex;
