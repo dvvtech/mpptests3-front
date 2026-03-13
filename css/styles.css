@@ -128,9 +128,9 @@ body {
 }
 
 #results-panel {
-    width: 320px;
-    min-width: 280px;
-    max-width: 400px;
+    width: 420px;
+    min-width: 320px;
+    max-width: 450px;
     background: white;
     border-left: 1px solid #e5e7eb;
     overflow: hidden;
