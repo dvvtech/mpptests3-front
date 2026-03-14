@@ -535,13 +535,16 @@ function showResults(stats, data, meta) {
     const emailBtn = document.getElementById('btn-send-email');
     if (emailBtn) emailBtn.addEventListener('click', sendEmail);
 
+    const closeBtn = document.getElementById('btn-close-results');
+    if (closeBtn) closeBtn.addEventListener('click', closeResults);
+
     panel.classList.remove('hidden');
-    document.querySelector('#coloring-page > div:first-child')?.classList.add('hidden');
+    document.getElementById('toolbar')?.classList.add('hidden');
 }
 
 function closeResults() {
     document.getElementById('results-panel')?.classList.add('hidden');
-    document.querySelector('#coloring-page > div:first-child')?.classList.remove('hidden');
+    document.getElementById('toolbar')?.classList.remove('hidden');
 }
 
 function sendEmail() {
