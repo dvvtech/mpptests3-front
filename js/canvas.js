@@ -60,7 +60,12 @@ function initColorPalette() {
             if (App.state.isPanning) {
                 App.state.isPanning = false;
                 document.getElementById('canvas-wrapper')?.classList.remove('panning');
-                document.getElementById('btn-pan')?.classList.remove('bg-blue-200');
+                const panBtn = document.getElementById('btn-pan');
+                if (panBtn) {
+                    panBtn.classList.remove('bg-blue-500', 'text-white');
+                    panBtn.classList.add('bg-gray-100', 'hover:bg-gray-200');
+                    panBtn.title = 'Режим перемещения';
+                }
             }
         });
         palette.appendChild(btn);
@@ -364,10 +369,18 @@ function togglePan() {
     if (wrapper) {
         if (App.state.isPanning) {
             wrapper.classList.add('panning');
-            if (panBtn) panBtn.classList.add('bg-blue-200');
+            if (panBtn) {
+                panBtn.classList.add('bg-blue-500', 'text-white');
+                panBtn.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+                panBtn.title = 'Режим перемещения (вкл)';
+            }
         } else {
             wrapper.classList.remove('panning');
-            if (panBtn) panBtn.classList.remove('bg-blue-200');
+            if (panBtn) {
+                panBtn.classList.remove('bg-blue-500', 'text-white');
+                panBtn.classList.add('bg-gray-100', 'hover:bg-gray-200');
+                panBtn.title = 'Режим перемещения';
+            }
         }
     }
 }
