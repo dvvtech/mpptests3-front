@@ -409,7 +409,7 @@ App.saveState = function () {
 
 ### Отправка на почту (бэкенд C#)
 **Подготовка данных:**
-1. Текст результатов (main_characteristic, strengths, recommendations)
+1. Текст результатов (mainCharacteristic, strengths, recommendations)
 2. Изображение canvas в формате PNG (toDataURL())
 
 **Эндпоинт:** `/api/send-results` (будет реализован позже)
