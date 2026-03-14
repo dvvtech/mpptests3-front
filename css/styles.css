@@ -58,7 +58,7 @@ body {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    border: 2px solid transparent;
+    border: 2px solid #d1d5db;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -70,6 +70,18 @@ body {
 .color-btn.selected {
     border-color: #1f2937;
     box-shadow: 0 0 0 2px white, 0 0 0 4px #3b82f6;
+}
+
+#color-palette {
+    max-width: 380px;
+    flex-wrap: nowrap;
+}
+
+@media (max-width: 374px) {
+    #color-palette {
+        max-width: 180px;
+        flex-wrap: wrap;
+    }
 }
 
 #canvas-wrapper {
