@@ -409,7 +409,7 @@ function calculate() {
         return;
     }
     
-    App.showLoading('Анализ раскраски...');
+    App.showLoading('Анализ данных...');
     
     const stats = calculateColorStatistics();
         
