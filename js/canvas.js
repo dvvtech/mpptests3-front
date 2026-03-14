@@ -516,6 +516,9 @@ function showResults(stats, data, meta) {
         </button>
     `;
 
+    App.state.lastResults = data;
+    App.state.lastStats = stats;
+
     const emailBtn = document.getElementById('btn-send-email');
     if (emailBtn) emailBtn.addEventListener('click', sendEmail);
 
@@ -597,19 +600,8 @@ async function sendResultsToEmail(email) {
     try {
         const rotatedImageData = await getRotatedImageData();
         
-        const stats = {};
-        App.state.usedColors.forEach(color => {
-            const colorConfig = appConfig.colors.find(c => c.hex === color);
-            if (colorConfig) {
-                stats[colorConfig.name] = { hex: color };
-            }
-        });
-        
-        const results = {
-            mainCharacteristic: document.getElementById('main-characteristic')?.textContent || '',
-            strengths: getStrengthsList(),
-            recommendations: getRecommendationsList()
-        };
+        const stats = App.state.lastStats || [];
+        const results = App.state.lastResults || {};
         
         const userData = {
             gender: App.state.userData.gender === 'male' ? 'Мужской' : 'Женский',
@@ -674,41 +666,6 @@ function getRotatedImageData() {
         
         tempCanvas.toBlob(resolve, 'image/png', 1.0);
     });
-}
-
-function getStrengthsList() {
-    const list = [];
-    const container = document.getElementById('results-scroll');
-    if (!container) return list;
-    
-    const items = container.querySelectorAll('ul li');
-    const strengthsHeader = Array.from(container.querySelectorAll('h3')).find(h => h.textContent.includes('Сильные стороны'));
-    
-    if (strengthsHeader) {
-        const ul = strengthsHeader.parentElement.querySelector('ul');
-        if (ul) {
-            ul.querySelectorAll('li').forEach(item => list.push(item.textContent));
-        }
-    }
-    
-    return list;
-}
-
-function getRecommendationsList() {
-    const list = [];
-    const container = document.getElementById('results-scroll');
-    if (!container) return list;
-    
-    const recsHeader = Array.from(container.querySelectorAll('h3')).find(h => h.textContent.includes('Рекомендации'));
-    
-    if (recsHeader) {
-        const ul = recsHeader.parentElement.querySelector('ul');
-        if (ul) {
-            ul.querySelectorAll('li').forEach(item => list.push(item.textContent));
-        }
-    }
-    
-    return list;
 }
 
 App.saveState = function() {

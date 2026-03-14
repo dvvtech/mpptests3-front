@@ -41,6 +41,8 @@ const App = {
         brushSize: 15,
         selectedTest: null,
         usedColors: new Set(),
+        lastResults: null,
+        lastStats: null,
         userData: {
             gender: '',
             birthDate: '',
