@@ -13,8 +13,8 @@ async function sendAnalysisRequest(data) {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
-        return await response.json();
+        var t = await response.json();
+        return t;
     } catch (error) {
         console.error('API request failed:', error);
         throw error;
