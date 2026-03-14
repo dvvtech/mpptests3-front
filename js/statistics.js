@@ -15,15 +15,16 @@ function calculateColorStatistics() {
         
         const hex = rgbToHex(r, g, b);
         
-        if (colorDistance(hex, '#EDEDED') < 30) continue;
-        
         const colorName = findClosestColorName(hex);
         
+        if (!colorName) continue;
+        
         if (!colorCounts[colorName]) {
+            const colorConfig = appConfig.colors.find(c => c.name === colorName);
             colorCounts[colorName] = {
                 name: colorName,
                 count: 0,
-                hex: appConfig.colors.find(c => c.name === colorName)?.hex || hex
+                hex: colorConfig ? colorConfig.hex : hex
             };
         }
         colorCounts[colorName].count++;
@@ -36,7 +37,7 @@ function calculateColorStatistics() {
         .map(c => ({
             name: c.name,
             count: c.count,
-            percentage: (c.count / totalPixels) * 100,
+            percentage: totalPixels > 0 ? (c.count / totalPixels) * 100 : 0,
             hex: c.hex
         }))
         .sort((a, b) => b.count - a.count);

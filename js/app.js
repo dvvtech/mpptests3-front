@@ -206,18 +206,8 @@ function colorDistance(hex1, hex2) {
 }
 
 function findClosestColorName(hex) {
-    let closestName = 'Неизвестный';
-    let minDistance = Infinity;
-    
-    for (const color of appConfig.colors) {
-        const distance = colorDistance(hex, color.hex);
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestName = color.name;
-        }
-    }
-    
-    return closestName;
+    const color = appConfig.colors.find(c => c.hex.toLowerCase() === hex.toLowerCase());
+    return color ? color.name : null;
 }
 
 let selectedTest = null;
