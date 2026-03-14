@@ -412,9 +412,7 @@ function calculate() {
     App.showLoading('Анализ раскраски...');
     
     const stats = calculateColorStatistics();
-    
-    App.showLoading('Анализ раскраски...');
-    
+        
     const birthDateStr = App.state.userData.birthDate;
     const birthDate = birthDateStr ? new Date(birthDateStr) : new Date();
     const age = birthDateStr ? calculateAge(birthDateStr) : 25;
