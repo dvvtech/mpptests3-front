@@ -40,6 +40,7 @@ const App = {
         currentColor: '#ef4444',
         brushSize: 15,
         selectedTest: null,
+        usedColors: new Set(),
         userData: {
             gender: '',
             birthDate: '',

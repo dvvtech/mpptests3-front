@@ -252,6 +252,7 @@ function drawDot(x, y) {
     ctx.arc(x, y, App.state.brushSize / 2, 0, Math.PI * 2);
     ctx.fillStyle = App.state.currentColor;
     ctx.fill();
+    App.state.usedColors.add(App.state.currentColor);
 }
 
 function drawLine(x1, y1, x2, y2) {
@@ -263,6 +264,7 @@ function drawLine(x1, y1, x2, y2) {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
+    App.state.usedColors.add(App.state.currentColor);
 }
 
 function applyTransform() {
@@ -401,12 +403,15 @@ function clearCanvas() {
 }
 
 function calculate() {
-    const stats = calculateColorStatistics();
     
-    if (stats.length === 0) {
+    if (App.state.usedColors.size === 0) {
         App.showModal('Предупреждение', 'Вы не использовали ни одного цвета для раскраски. Пожалуйста, раскрасьте тест перед анализом.', [{ text: 'OK' }]);
         return;
     }
+    
+    App.showLoading('Анализ раскраски...');
+    
+    const stats = calculateColorStatistics();
     
     App.showLoading('Анализ раскраски...');
     
@@ -607,6 +612,7 @@ App.loadImageFromFile = function(image) {
         this.state.scale = 0.9;
         this.state.offsetX = 0;
         this.state.offsetY = 0;
+        this.state.usedColors.clear();
 
         applyTransform();
         this.drawImageOnCanvas(img);
