@@ -21,7 +21,7 @@ const appConfig = {
         { name: "Синий", hex: "#3b82f6" },
         { name: "Фиолетовый", hex: "#8b5cf6" },
         { name: "Бирюзовый", hex: "#06b6d4" },
-        { name: "Черный", hex: "#000000" },
+        { name: "Черный", hex: "#000010" },
         { name: "Белый", hex: "#ffffff" }
     ],
     backgroundColor: BACKGROUND_COLOR
