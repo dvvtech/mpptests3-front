@@ -529,11 +529,186 @@ function closeResults() {
 }
 
 function sendEmail() {
-    App.showModal(
-        'Отправка результатов',
-        'Функция отправки результатов на почту будет доступна позже.',
-        [{ text: 'OK' }]
-    );
+    const modal = document.getElementById('email-modal');
+    const input = document.getElementById('email-input');
+    const error = document.getElementById('email-error');
+    const sending = document.getElementById('email-sending');
+    const success = document.getElementById('email-success');
+    
+    if (!modal || !input) return;
+    
+    input.value = '';
+    error.classList.add('hidden');
+    sending.classList.add('hidden');
+    success.classList.add('hidden');
+    modal.classList.remove('hidden');
+    
+    const validateEmail = (email) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
+    
+    const confirmBtn = document.getElementById('btn-send-email-confirm');
+    const cancelBtn = document.getElementById('btn-send-email-cancel');
+    
+    const closeModal = () => {
+        modal.classList.add('hidden');
+        confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+        cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+    };
+    
+    const sendHandler = async () => {
+        const email = input.value.trim();
+        
+        if (!email) {
+            error.textContent = 'Введите email';
+            error.classList.remove('hidden');
+            return;
+        }
+        
+        if (!validateEmail(email)) {
+            error.textContent = 'Введите корректный email';
+            error.classList.remove('hidden');
+            return;
+        }
+        
+        error.classList.add('hidden');
+        sending.classList.remove('hidden');
+        
+        await sendResultsToEmail(email);
+        
+        sending.classList.add('hidden');
+        success.classList.remove('hidden');
+        
+        setTimeout(closeModal, 2000);
+    };
+    
+    const newConfirmBtn = document.getElementById('btn-send-email-confirm');
+    const newCancelBtn = document.getElementById('btn-send-email-cancel');
+    
+    newConfirmBtn.addEventListener('click', sendHandler);
+    newCancelBtn.addEventListener('click', closeModal);
+    
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendHandler();
+    });
+}
+
+async function sendResultsToEmail(email) {
+    try {
+        const rotatedImageData = await getRotatedImageData();
+        
+        const stats = {};
+        App.state.usedColors.forEach(color => {
+            const colorConfig = appConfig.colors.find(c => c.hex === color);
+            if (colorConfig) {
+                stats[colorConfig.name] = { hex: color };
+            }
+        });
+        
+        const results = {
+            mainCharacteristic: document.getElementById('main-characteristic')?.textContent || '',
+            strengths: getStrengthsList(),
+            recommendations: getRecommendationsList()
+        };
+        
+        const userData = {
+            gender: App.state.userData.gender === 'male' ? 'Мужской' : 'Женский',
+            birthDate: App.state.userData.birthDate,
+            age: App.state.userData.birthDate ? Math.floor((new Date() - new Date(App.state.userData.birthDate)) / (365.25 * 24 * 60 * 60 * 1000)) : 0,
+            zodiacSign: getZodiacNameRu(getZodiacSign(new Date(App.state.userData.birthDate).getDate(), new Date(App.state.userData.birthDate).getMonth() + 1)),
+            selectedTest: App.state.selectedTest ? App.state.selectedTest.name : 'Не выбран'
+        };
+        
+        const formData = new FormData();
+        formData.append('email', email);
+        formData.append('image', rotatedImageData, 'coloring.png');
+        formData.append('stats', JSON.stringify(stats));
+        formData.append('results', JSON.stringify(results));
+        formData.append('userData', JSON.stringify(userData));
+        
+        const response = await fetch('https://api.cloud-platform.pro/email/mpptests/send', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('Результаты отправлены:', result);
+        
+    } catch (error) {
+        console.error('Ошибка при отправке на почту:', error);
+        const errorEl = document.getElementById('email-error');
+        if (errorEl) {
+            errorEl.textContent = 'Ошибка при отправке. Попробуйте позже.';
+            errorEl.classList.remove('hidden');
+        }
+    }
+}
+
+function getRotatedImageData() {
+    return new Promise((resolve) => {
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        const angle = ((App.state.rotation % 360) + 360) % 360;
+        
+        if (angle === 90 || angle === 270) {
+            tempCanvas.width = canvas.height;
+            tempCanvas.height = canvas.width;
+        } else {
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+        }
+        
+        tempCtx.fillStyle = '#ffffff';
+        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        
+        tempCtx.save();
+        tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+        tempCtx.rotate(angle * Math.PI / 180);
+        tempCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+        tempCtx.restore();
+        
+        tempCanvas.toBlob(resolve, 'image/png', 1.0);
+    });
+}
+
+function getStrengthsList() {
+    const list = [];
+    const container = document.getElementById('results-scroll');
+    if (!container) return list;
+    
+    const items = container.querySelectorAll('ul li');
+    const strengthsHeader = Array.from(container.querySelectorAll('h3')).find(h => h.textContent.includes('Сильные стороны'));
+    
+    if (strengthsHeader) {
+        const ul = strengthsHeader.parentElement.querySelector('ul');
+        if (ul) {
+            ul.querySelectorAll('li').forEach(item => list.push(item.textContent));
+        }
+    }
+    
+    return list;
+}
+
+function getRecommendationsList() {
+    const list = [];
+    const container = document.getElementById('results-scroll');
+    if (!container) return list;
+    
+    const recsHeader = Array.from(container.querySelectorAll('h3')).find(h => h.textContent.includes('Рекомендации'));
+    
+    if (recsHeader) {
+        const ul = recsHeader.parentElement.querySelector('ul');
+        if (ul) {
+            ul.querySelectorAll('li').forEach(item => list.push(item.textContent));
+        }
+    }
+    
+    return list;
 }
 
 App.saveState = function() {

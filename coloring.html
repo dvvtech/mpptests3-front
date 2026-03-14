@@ -1,4 +1,30 @@
 <div id="coloring-page" class="min-h-screen bg-gray-100 flex flex-col">
+    <div id="email-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Отправка результатов на почту</h3>
+            <div class="mb-4">
+                <label for="email-input" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" id="email-input" placeholder="example@mail.com"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                <p id="email-error" class="text-red-500 text-xs mt-1 hidden">Введите корректный email</p>
+            </div>
+            <div id="email-sending" class="hidden text-center py-2">
+                <i class="fas fa-spinner fa-spin text-blue-500"></i>
+                <span class="text-sm text-gray-600 ml-2">Отправка...</span>
+            </div>
+            <div id="email-success" class="hidden text-green-600 text-sm text-center py-2">
+                <i class="fas fa-check-circle"></i> Результаты успешно отправлены!
+            </div>
+            <div class="flex gap-3 mt-4">
+                <button id="btn-send-email-confirm" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition">
+                    Отправить
+                </button>
+                <button id="btn-send-email-cancel" class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition">
+                    Отмена
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="bg-white shadow-md p-2 md:p-3">
         <div class="flex flex-wrap items-center gap-2 md:gap-3 justify-center">
             <button id="btn-home" class="flex items-center gap-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition" title="Главная">
