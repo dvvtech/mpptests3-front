@@ -489,6 +489,15 @@ function showResults(stats, data, meta) {
     const zodiacRu = getZodiacNameRu(getZodiacSign(new Date(meta.birthdate).getDate(), new Date(meta.birthdate).getMonth() + 1));
     const genderRu = meta.gender === 'male' ? 'Мужской' : 'Женский';
 
+    const colorDistributionHtml = stats.length > 0 ? `
+        <div class="mt-3 pt-3 border-t border-gray-100">
+            <h4 class="text-sm font-medium text-gray-600 mb-2">Распределение цветов</h4>
+            <div class="flex h-5 rounded-md overflow-hidden border border-gray-300">
+                ${stats.map(c => `<div class="h-full" style="width: ${c.percentage}%; background-color: ${c.hex};" title="${c.name}: ${c.percentage.toFixed(1)}%"></div>`).join('')}
+            </div>
+        </div>
+    ` : '';
+
     scroll.innerHTML = `
         <div class="mb-4">
             <h3 class="text-base font-semibold text-gray-800 mb-2">Данные пользователя</h3>
@@ -503,12 +512,13 @@ function showResults(stats, data, meta) {
         <div class="mb-4">
             <h3 class="text-base font-semibold text-gray-800 mb-2">Использованные цвета</h3>
             ${chartHtml}
+            ${colorDistributionHtml}
         </div>
 
         ${data.mainCharacteristic ? `
         <div class="mb-4">
             <h3 class="text-base font-semibold text-gray-800 mb-2">Характеристика</h3>
-            <p class="text-sm text-gray-700 leading-relaxed">${data.mainCharacteristic}</p>
+            <p class="text-sm text-gray-700 leading-relaxed">${data.main_characteristic}</p>
         </div>` : ''}
 
         ${strengthsHtml ? `
