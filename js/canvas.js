@@ -518,7 +518,7 @@ function showResults(stats, data, meta) {
         ${data.mainCharacteristic ? `
         <div class="mb-4">
             <h3 class="text-base font-semibold text-gray-800 mb-2">Характеристика</h3>
-            <p class="text-sm text-gray-700 leading-relaxed">${data.main_characteristic}</p>
+            <p class="text-sm text-gray-700 leading-relaxed">${data.mainCharacteristic}</p>
         </div>` : ''}
 
         ${strengthsHtml ? `
