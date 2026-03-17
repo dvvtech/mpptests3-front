@@ -247,9 +247,7 @@ function onTouchMove(e) {
         }
     }
 }
-    }
-}
-
+    
 function onTouchEnd(e) {
     if (e.touches.length < 2) {
         initialPinchDistance = 0;
