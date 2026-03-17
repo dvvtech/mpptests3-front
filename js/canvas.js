@@ -223,11 +223,14 @@ function onTouchMove(e) {
         App.state.scale = Math.min(Math.max(newScale, 0.2), 5);
         App.state.scale = Math.round(App.state.scale * 10) / 10;
         
-        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        const container = document.getElementById('canvas-container');
+        const containerRect = container.getBoundingClientRect();
+        const containerCenterX = containerRect.left + containerRect.width / 2;
+        const containerCenterY = containerRect.top + containerRect.height / 2;
+        
         const scaleRatio = App.state.scale / initialPinchScale;
-        App.state.offsetX = initialPinchOffsetX + (centerX - initialPinchCenterX) * (1 - scaleRatio);
-        App.state.offsetY = initialPinchOffsetY + (centerY - initialPinchCenterY) * (1 - scaleRatio);
+        App.state.offsetX = (initialPinchCenterX - containerCenterX) * (1 - scaleRatio) + initialPinchOffsetX * scaleRatio;
+        App.state.offsetY = (initialPinchCenterY - containerCenterY) * (1 - scaleRatio) + initialPinchOffsetY * scaleRatio;
         
         applyTransform();
     } else if (e.touches.length === 1) {
