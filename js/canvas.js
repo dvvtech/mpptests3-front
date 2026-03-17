@@ -454,12 +454,22 @@ function calculate() {
         .then(response => {
             App.hideLoading();
             showResults(stats, response, meta);
+            if (window.innerWidth <= 768) {
+                App.state.previousScale = App.state.scale;
+                App.state.scale = 0.7;
+                applyTransform();
+            }
         })
         .catch(error => {
             App.hideLoading();
             console.error('API Error:', error);
             const demoResponse = getDemoResponse();
             showResults(stats, demoResponse, meta);
+            if (window.innerWidth <= 768) {
+                App.state.previousScale = App.state.scale;
+                App.state.scale = 0.7;
+                applyTransform();
+            }
         });
 }
 
@@ -555,6 +565,10 @@ function showResults(stats, data, meta) {
 function closeResults() {
     document.getElementById('results-panel')?.classList.add('hidden');
     document.getElementById('toolbar')?.classList.remove('hidden');
+    if (window.innerWidth <= 768 && App.state.previousScale !== undefined) {
+        App.state.scale = App.state.previousScale;
+        applyTransform();
+    }
 }
 
 function sendEmail() {
