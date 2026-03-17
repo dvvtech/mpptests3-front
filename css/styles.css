@@ -161,7 +161,8 @@ body {
         max-width: 100%;
         border-left: none;
         border-top: 1px solid #e5e7eb;
-        max-height: 40vh;
+        max-height: 55vh;
+        min-height: 45vh;
     }
 
     #work-area {
@@ -175,6 +176,14 @@ body {
     #coloring-canvas {
         max-width: 100%;
         height: auto;
+        transform: scale(0.85);
+        transform-origin: center center;
+    }
+
+    #canvas-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .image-preview {
