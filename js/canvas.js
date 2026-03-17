@@ -10,6 +10,10 @@ let panStartOffsetX = 0;
 let panStartOffsetY = 0;
 let initialPinchDistance = 0;
 let initialPinchScale = 1;
+let initialPinchCenterX = 0;
+let initialPinchCenterY = 0;
+let initialPinchOffsetX = 0;
+let initialPinchOffsetY = 0;
 
 function initColoring() {
     canvas = document.getElementById('coloring-canvas');
@@ -186,6 +190,10 @@ function onTouchStart(e) {
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
         initialPinchScale = App.state.scale;
+        initialPinchCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        initialPinchCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        initialPinchOffsetX = App.state.offsetX;
+        initialPinchOffsetY = App.state.offsetY;
     } else if (e.touches.length === 1) {
         e.preventDefault();
         const touch = e.touches[0];
@@ -211,9 +219,16 @@ function onTouchMove(e) {
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        const scale = initialPinchScale * (distance / initialPinchDistance);
-        App.state.scale = Math.min(Math.max(scale, 0.2), 5);
+        const newScale = initialPinchScale * (distance / initialPinchDistance);
+        App.state.scale = Math.min(Math.max(newScale, 0.2), 5);
         App.state.scale = Math.round(App.state.scale * 10) / 10;
+        
+        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        const scaleRatio = App.state.scale / initialPinchScale;
+        App.state.offsetX = initialPinchOffsetX + (centerX - initialPinchCenterX) * (1 - scaleRatio);
+        App.state.offsetY = initialPinchOffsetY + (centerY - initialPinchCenterY) * (1 - scaleRatio);
+        
         applyTransform();
     } else if (e.touches.length === 1) {
         e.preventDefault();
@@ -230,6 +245,8 @@ function onTouchMove(e) {
             lastX = pos.x;
             lastY = pos.y;
         }
+    }
+}
     }
 }
 
