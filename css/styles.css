@@ -161,8 +161,8 @@ body {
         max-width: 100%;
         border-left: none;
         border-top: 1px solid #e5e7eb;
-        max-height: 55vh;
-        min-height: 45vh;
+        max-height: 65vh;
+        min-height: 35vh;
     }
 
     #work-area {
