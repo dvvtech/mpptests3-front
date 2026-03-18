@@ -559,6 +559,7 @@ function showResults(stats, data, meta) {
     if (closeBtn) closeBtn.addEventListener('click', closeResults);
 
     panel.classList.remove('hidden');
+    scroll.scrollTop = 0;
     document.getElementById('toolbar')?.classList.add('hidden');
 }
 
