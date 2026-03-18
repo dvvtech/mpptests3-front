@@ -786,9 +786,9 @@ App.loadImageFromFile = function(image) {
 
         applyTransform();
         this.drawImageOnCanvas(img);
-        this.saveState();
         this.state.undoStack = [];
         this.state.redoStack = [];
+        this.saveState();
         this.updateUndoRedoButtons();
 
         this.hideLoading();
@@ -797,9 +797,9 @@ App.loadImageFromFile = function(image) {
     img.onerror = () => {
         console.error(`Не удалось загрузить изображение: ${image.filename}`);
         this.drawPlaceholderImage();
-        this.saveState();
         this.state.undoStack = [];
         this.state.redoStack = [];
+        this.saveState();
         this.updateUndoRedoButtons();
 
         this.hideLoading();
