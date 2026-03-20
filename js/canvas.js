@@ -807,6 +807,7 @@ App.loadImageFromFile = function(image) {
         this.state.redoStack = [];
         this.saveState();
         this.updateUndoRedoButtons();
+        updateTestTitle();
 
         this.hideLoading();
     };
