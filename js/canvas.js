@@ -789,6 +789,13 @@ App.drawPlaceholderImage = function() {
     this.ctx.fillText('Вернитесь на страницу настроек', this.canvas.width / 2, this.canvas.height / 2 + 30);
 };
 
+function getInitialScale() {
+    const ratio = window.innerHeight / window.innerWidth;
+    if (ratio < 1.35) return 0.8;
+    if (ratio <= 1.45) return 0.9;
+    return 1;
+}
+
 App.loadImageFromFile = function(image) {
     this.showLoading('Загрузка теста...');
 
@@ -798,7 +805,7 @@ App.loadImageFromFile = function(image) {
     img.onload = () => {
         this.state.loadedImages[image.filename] = img;
         this.state.rotation = 0;
-        this.state.scale = 0.8;
+        this.state.scale = getInitialScale();
         this.state.offsetX = 0;
         this.state.offsetY = 0;
         this.state.usedColors.clear();
