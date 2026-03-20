@@ -796,7 +796,7 @@ App.loadImageFromFile = function(image) {
     img.onload = () => {
         this.state.loadedImages[image.filename] = img;
         this.state.rotation = 0;
-        this.state.scale = 0.9;
+        this.state.scale = 0.8;
         this.state.offsetX = 0;
         this.state.offsetY = 0;
         this.state.usedColors.clear();
