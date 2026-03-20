@@ -577,11 +577,13 @@ function showResults(stats, data, meta) {
     panel.classList.remove('hidden');
     scroll.scrollTop = 0;
     document.getElementById('toolbar')?.classList.add('hidden');
+    document.getElementById('btn-home')?.classList.add('invisible');
 }
 
 function closeResults() {
     document.getElementById('results-panel')?.classList.add('hidden');
     document.getElementById('toolbar')?.classList.remove('hidden');
+    document.getElementById('btn-home')?.classList.remove('invisible');
     if (window.innerWidth <= 768 && App.state.previousScale !== undefined) {
         App.state.scale = App.state.previousScale;
         applyTransform();
