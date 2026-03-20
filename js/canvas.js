@@ -22,6 +22,7 @@ function initColoring() {
     initColorPalette();
     initCanvasEvents();
     initToolButtons();
+    updateTestTitle();
     
     const savedData = App.loadFromLocalStorage();
     if (savedData) {
@@ -38,6 +39,15 @@ function initColoring() {
     
     App.drawPlaceholderImage();
     App.updateUndoRedoButtons();
+}
+
+function updateTestTitle() {
+    const testNameEl = document.getElementById('test-name');
+    if (testNameEl && App.state.selectedTest) {
+        testNameEl.textContent = App.state.selectedTest.name;
+    } else if (testNameEl) {
+        testNameEl.textContent = 'Тест не выбран';
+    }
 }
 
 function initColorPalette() {
