@@ -138,6 +138,9 @@ function getCanvasPos(clientX, clientY) {
 function onPointerDown(e) {
     e.preventDefault();
     
+    const resultsPanel = document.getElementById('results-panel');
+    if (resultsPanel && !resultsPanel.classList.contains('hidden')) return;
+    
     if (App.state.isPanning) {
         isPanning = true;
         panStartX = e.clientX;
@@ -179,13 +182,16 @@ function onPointerUp(e) {
 }
 
 function onTouchStart(e) {
+    const resultsPanel = document.getElementById('results-panel');
+    if (resultsPanel && !resultsPanel.classList.contains('hidden')) return;
+    
     if (e.touches.length === 2 && App.state.isPanning) {
         e.preventDefault();
         isDrawing = false;
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
-        initialPinchScale = App.state.scale;
+        initialPinchScale = App.state.scale;        
     } else if (e.touches.length === 1) {
         e.preventDefault();
         const touch = e.touches[0];
@@ -213,7 +219,7 @@ function onTouchMove(e) {
         const distance = Math.sqrt(dx * dx + dy * dy);
         const scale = initialPinchScale * (distance / initialPinchDistance);
         App.state.scale = Math.min(Math.max(scale, 0.2), 5);
-        App.state.scale = Math.round(App.state.scale * 10) / 10;
+        App.state.scale = Math.round(App.state.scale * 10) / 10;        
         applyTransform();
     } else if (e.touches.length === 1) {
         e.preventDefault();
