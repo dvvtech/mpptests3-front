@@ -472,7 +472,7 @@ function calculate() {
             showResults(stats, response, meta);
             if (window.innerWidth <= 768) {
                 App.state.previousScale = App.state.scale;
-                App.state.scale = 0.6;
+                App.state.scale = 0.5;
                 applyTransform();
             }
         })
@@ -483,7 +483,7 @@ function calculate() {
             showResults(stats, demoResponse, meta);
             if (window.innerWidth <= 768) {
                 App.state.previousScale = App.state.scale;
-                App.state.scale = 0.6;
+                App.state.scale = 0.5;
                 applyTransform();
             }
         });
