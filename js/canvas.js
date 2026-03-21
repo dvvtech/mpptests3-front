@@ -470,23 +470,32 @@ function calculate() {
         .then(response => {
             App.hideLoading();
             showResults(stats, response, meta);
-            if (window.innerWidth <= 768) {
-                App.state.previousScale = App.state.scale;
-                App.state.scale = 0.5;
-                applyTransform();
-            }
+            updateScaleByWindowSize();
         })
         .catch(error => {
             App.hideLoading();
             console.error('API Error:', error);
             const demoResponse = getDemoResponse();
             showResults(stats, demoResponse, meta);
-            if (window.innerWidth <= 768) {
-                App.state.previousScale = App.state.scale;
-                App.state.scale = 0.5;
-                applyTransform();
-            }
+            updateScaleByWindowSize();
         });
+}
+
+function updateScaleByWindowSize() {
+    if (window.innerWidth <= 768) {
+        const ratio = window.innerHeight / window.innerWidth;
+        App.state.previousScale = App.state.scale;
+        
+        if (ratio > 1.5) {
+            App.state.scale = 0.5;
+        } else {
+            App.state.scale = 0.3;
+        }
+    } else if (window.innerWidth <= 912) {
+        App.state.scale = 0.5;
+    }
+    
+    applyTransform();
 }
 
 function showResults(stats, data, meta) {
