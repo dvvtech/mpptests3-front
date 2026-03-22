@@ -551,7 +551,7 @@ function showResults(stats, data, meta) {
 
             ${data.dominantEnergy ? `
             <div class="mt-3 text-sm font-medium text-gray-700">
-                <span class="text-gray-600">Энергия:</span> ${data.dominantEnergy}
+                <span class="text-gray-600"></span> ${data.dominantEnergy}
             </div>
     ` : ''}
         </div>
