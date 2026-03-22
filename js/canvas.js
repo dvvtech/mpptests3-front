@@ -14,21 +14,21 @@ let initialPinchScale = 1;
 function initColoring() {
     canvas = document.getElementById('coloring-canvas');
     if (!canvas) return;
-    
+
     ctx = canvas.getContext('2d');
     App.canvas = canvas;
     App.ctx = ctx;
-    
+
     initColorPalette();
     initCanvasEvents();
     initToolButtons();
     updateTestTitle();
-    
+
     const savedData = App.loadFromLocalStorage();
     if (savedData) {
         const genderSelect = document.getElementById('gender');
         const birthDateInput = document.getElementById('birthDate');
-        
+
         if (genderSelect && savedData.gender) {
             genderSelect.value = savedData.gender;
         }
@@ -36,7 +36,7 @@ function initColoring() {
             birthDateInput.value = savedData.birthDate;
         }
     }
-    
+
     App.drawPlaceholderImage();
     App.updateUndoRedoButtons();
 }
@@ -53,9 +53,9 @@ function updateTestTitle() {
 function initColorPalette() {
     const palette = document.getElementById('color-palette');
     if (!palette) return;
-    
+
     palette.innerHTML = '';
-    
+
     appConfig.colors.forEach((color, index) => {
         const btn = document.createElement('button');
         const isWhite = color.hex.toLowerCase() === '#ffffff' || color.hex.toLowerCase() === 'white';
@@ -84,16 +84,16 @@ function initColorPalette() {
 
 function initCanvasEvents() {
     if (!canvas) return;
-    
+
     canvas.addEventListener('mousedown', onPointerDown);
     canvas.addEventListener('mousemove', onPointerMove);
     canvas.addEventListener('mouseup', onPointerUp);
     canvas.addEventListener('mouseleave', onPointerUp);
-    
+
     canvas.addEventListener('touchstart', onTouchStart, { passive: false });
     canvas.addEventListener('touchmove', onTouchMove, { passive: false });
     canvas.addEventListener('touchend', onTouchEnd);
-    
+
     const brushSizeInput = document.getElementById('brush-size');
     const brushSizeValue = document.getElementById('brush-size-value');
     if (brushSizeInput && brushSizeValue) {
@@ -102,7 +102,7 @@ function initCanvasEvents() {
             brushSizeValue.textContent = e.target.value;
         });
     }
-    
+
     const wrapper = document.getElementById('canvas-wrapper');
     if (wrapper) {
         wrapper.addEventListener('wheel', onWheel, { passive: false });
@@ -116,7 +116,7 @@ function getCanvasPos(clientX, clientY) {
     }
 
     const angle = ((App.state.rotation % 360) + 360) % 360;
-    
+
     let x, y;
     const rx = (clientX - rect.left) / rect.width;
     const ry = (clientY - rect.top) / rect.height;
@@ -147,10 +147,10 @@ function getCanvasPos(clientX, clientY) {
 
 function onPointerDown(e) {
     e.preventDefault();
-    
+
     const resultsPanel = document.getElementById('results-panel');
     if (resultsPanel && !resultsPanel.classList.contains('hidden')) return;
-    
+
     if (App.state.isPanning) {
         isPanning = true;
         panStartX = e.clientX;
@@ -168,7 +168,7 @@ function onPointerDown(e) {
 
 function onPointerMove(e) {
     e.preventDefault();
-    
+
     if (App.state.isPanning && isPanning) {
         const dx = e.clientX - panStartX;
         const dy = e.clientY - panStartY;
@@ -194,14 +194,14 @@ function onPointerUp(e) {
 function onTouchStart(e) {
     const resultsPanel = document.getElementById('results-panel');
     if (resultsPanel && !resultsPanel.classList.contains('hidden')) return;
-    
+
     if (e.touches.length === 2 && App.state.isPanning) {
         e.preventDefault();
         isDrawing = false;
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
-        initialPinchScale = App.state.scale;        
+        initialPinchScale = App.state.scale;
     } else if (e.touches.length === 1) {
         e.preventDefault();
         const touch = e.touches[0];
@@ -229,7 +229,7 @@ function onTouchMove(e) {
         const distance = Math.sqrt(dx * dx + dy * dy);
         const scale = initialPinchScale * (distance / initialPinchDistance);
         App.state.scale = Math.min(Math.max(scale, 0.2), 5);
-        App.state.scale = Math.round(App.state.scale * 10) / 10;        
+        App.state.scale = Math.round(App.state.scale * 10) / 10;
         applyTransform();
     } else if (e.touches.length === 1) {
         e.preventDefault();
@@ -290,15 +290,15 @@ function drawLine(x1, y1, x2, y2) {
 
 function applyTransform() {
     if (!canvas) return;
-    
+
     const s = App.state.scale;
     const ox = App.state.offsetX;
     const oy = App.state.offsetY;
     const rot = App.state.rotation;
-    
+
     canvas.style.transform = `translate(${ox}px, ${oy}px) rotate(${rot}deg) scale(${s})`;
     canvas.style.transformOrigin = 'center center';
-    
+
     const zoomLevel = document.getElementById('zoom-level');
     if (zoomLevel) zoomLevel.textContent = Math.round(s * 100) + '%';
 }
@@ -325,8 +325,8 @@ function goToHome() {
         'Вы действительно хотите перейти на главную? В этом случае ваши данные не сохранятся.',
         [
             { text: 'Отмена' },
-            { 
-                text: 'Перейти', 
+            {
+                text: 'Перейти',
                 class: 'bg-blue-500 hover:bg-blue-600 text-white',
                 callback: () => {
                     document.getElementById('settings').classList.remove('hidden');
@@ -370,7 +370,7 @@ function redo() {
 
 function restoreState(dataURL) {
     const img = new Image();
-    img.onload = function() {
+    img.onload = function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
     };
@@ -381,7 +381,7 @@ function togglePan() {
     App.state.isPanning = !App.state.isPanning;
     const wrapper = document.getElementById('canvas-wrapper');
     const panBtn = document.getElementById('btn-pan');
-    
+
     if (wrapper) {
         if (App.state.isPanning) {
             wrapper.classList.add('panning');
@@ -415,8 +415,8 @@ function clearCanvas() {
         'Очистить тест?',
         [
             { text: 'Отмена' },
-            { 
-                text: 'Очистить', 
+            {
+                text: 'Очистить',
                 class: 'bg-red-500 hover:bg-red-600 text-white',
                 callback: () => {
                     if (App.state.selectedTest) {
@@ -432,27 +432,27 @@ function clearCanvas() {
 }
 
 function calculate() {
-    
+
     if (App.state.usedColors.size === 0) {
         App.showModal('Предупреждение', 'Вы не использовали ни одного цвета для раскраски. Пожалуйста, раскрасьте тест перед анализом.', [{ text: 'OK' }]);
         return;
     }
-    
+
     App.showLoading('Анализ данных...');
-    
+
     const stats = calculateColorStatistics();
-        
+
     const birthDateStr = App.state.userData.birthDate;
     const birthDate = birthDateStr ? new Date(birthDateStr) : new Date();
     const age = birthDateStr ? calculateAge(birthDateStr) : 25;
     const zodiacSign = getZodiacSign(birthDate.getDate(), birthDate.getMonth() + 1);
-    
+
     const meta = {
         gender: App.state.userData.gender || 'male',
         age: age,
         birthdate: birthDateStr
     };
-    
+
     const requestData = {
         user_color: {
             colors: stats.map(s => ({
@@ -465,7 +465,7 @@ function calculate() {
         },
         version: 1
     };
-    
+
     sendAnalysisRequest(requestData)
         .then(response => {
             App.hideLoading();
@@ -485,7 +485,7 @@ function updateScaleByWindowSize() {
     if (window.innerWidth <= 768) {
         const ratio = window.innerHeight / window.innerWidth;
         App.state.previousScale = App.state.scale;
-        
+
         if (ratio > 1.5) {
             App.state.scale = 0.5;
         } else {
@@ -494,7 +494,7 @@ function updateScaleByWindowSize() {
     } else if (window.innerWidth <= 912) {
         App.state.scale = 0.5;
     }
-    
+
     applyTransform();
 }
 
@@ -548,6 +548,12 @@ function showResults(stats, data, meta) {
             <h3 class="text-base font-semibold text-gray-800 mb-2">Использованные цвета</h3>
             ${chartHtml}
             ${colorDistributionHtml}
+
+            ${data.dominantEnergy ? `
+            <div class="mt-3 text-sm font-medium text-gray-700">
+                <span class="text-gray-600">Энергия:</span> ${data.dominantEnergy}
+            </div>
+    ` : ''}
         </div>
 
         ${data.mainCharacteristic ? `
@@ -605,60 +611,60 @@ function sendEmail() {
     const error = document.getElementById('email-error');
     const sending = document.getElementById('email-sending');
     const success = document.getElementById('email-success');
-    
+
     if (!modal || !input) return;
-    
+
     input.value = '';
     error.classList.add('hidden');
     sending.classList.add('hidden');
     success.classList.add('hidden');
     modal.classList.remove('hidden');
-    
+
     const validateEmail = (email) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     };
-    
+
     const confirmBtn = document.getElementById('btn-send-email-confirm');
     const cancelBtn = document.getElementById('btn-send-email-cancel');
-    
+
     const closeModal = () => {
         modal.classList.add('hidden');
         confirmBtn.replaceWith(confirmBtn.cloneNode(true));
         cancelBtn.replaceWith(cancelBtn.cloneNode(true));
     };
-    
+
     const sendHandler = async () => {
         const email = input.value.trim();
-        
+
         if (!email) {
             error.textContent = 'Введите email';
             error.classList.remove('hidden');
             return;
         }
-        
+
         if (!validateEmail(email)) {
             error.textContent = 'Введите корректный email';
             error.classList.remove('hidden');
             return;
         }
-        
+
         error.classList.add('hidden');
         sending.classList.remove('hidden');
-        
+
         await sendResultsToEmail(email);
-        
+
         sending.classList.add('hidden');
         success.classList.remove('hidden');
-        
+
         setTimeout(closeModal, 2000);
     };
-    
+
     const newConfirmBtn = document.getElementById('btn-send-email-confirm');
     const newCancelBtn = document.getElementById('btn-send-email-cancel');
-    
+
     newConfirmBtn.addEventListener('click', sendHandler);
     newCancelBtn.addEventListener('click', closeModal);
-    
+
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendHandler();
     });
@@ -667,10 +673,10 @@ function sendEmail() {
 async function sendResultsToEmail(email) {
     try {
         const rotatedImageData = await getRotatedImageData();
-        
+
         const stats = App.state.lastStats || [];
         const results = App.state.lastResults || {};
-        
+
         const userData = {
             gender: App.state.userData.gender === 'male' ? 'Мужской' : 'Женский',
             birthDate: App.state.userData.birthDate,
@@ -678,26 +684,26 @@ async function sendResultsToEmail(email) {
             zodiacSign: getZodiacNameRu(getZodiacSign(new Date(App.state.userData.birthDate).getDate(), new Date(App.state.userData.birthDate).getMonth() + 1)),
             selectedTest: App.state.selectedTest ? App.state.selectedTest.name : 'Не выбран'
         };
-        
+
         const formData = new FormData();
         formData.append('email', email);
         formData.append('image', rotatedImageData, 'coloring.png');
         formData.append('stats', JSON.stringify(stats));
         formData.append('results', JSON.stringify(results));
         formData.append('userData', JSON.stringify(userData));
-        
+
         const response = await fetch('https://api.cloud-platform.pro/email/mpptests/send', {
             method: 'POST',
             body: formData
         });
-        
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const result = await response.json();
         console.log('Результаты отправлены:', result);
-        
+
     } catch (error) {
         console.error('Ошибка при отправке на почту:', error);
         const errorEl = document.getElementById('email-error');
@@ -712,9 +718,9 @@ function getRotatedImageData() {
     return new Promise((resolve) => {
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
-        
+
         const angle = ((App.state.rotation % 360) + 360) % 360;
-        
+
         if (angle === 90 || angle === 270) {
             tempCanvas.width = canvas.height;
             tempCanvas.height = canvas.width;
@@ -722,21 +728,21 @@ function getRotatedImageData() {
             tempCanvas.width = canvas.width;
             tempCanvas.height = canvas.height;
         }
-        
+
         tempCtx.fillStyle = '#ffffff';
         tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-        
+
         tempCtx.save();
         tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
         tempCtx.rotate(angle * Math.PI / 180);
         tempCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
         tempCtx.restore();
-        
+
         tempCanvas.toBlob(resolve, 'image/png', 1.0);
     });
 }
 
-App.saveState = function() {
+App.saveState = function () {
     this.state.undoStack.push(canvas.toDataURL());
     if (this.state.undoStack.length > 20) {
         this.state.undoStack.shift();
@@ -745,16 +751,16 @@ App.saveState = function() {
     this.updateUndoRedoButtons();
 };
 
-App.updateUndoRedoButtons = function() {
+App.updateUndoRedoButtons = function () {
     const undoBtn = document.getElementById('btn-undo');
     const redoBtn = document.getElementById('btn-redo');
-    
+
     if (undoBtn) {
         undoBtn.disabled = this.state.undoStack.length <= 1;
         undoBtn.classList.toggle('opacity-50', this.state.undoStack.length <= 1);
         undoBtn.classList.toggle('cursor-not-allowed', this.state.undoStack.length <= 1);
     }
-    
+
     if (redoBtn) {
         redoBtn.disabled = this.state.redoStack.length === 0;
         redoBtn.classList.toggle('opacity-50', this.state.redoStack.length === 0);
@@ -762,7 +768,7 @@ App.updateUndoRedoButtons = function() {
     }
 };
 
-App.drawImageOnCanvas = function(img) {
+App.drawImageOnCanvas = function (img) {
     this.ctx.fillStyle = BACKGROUND_COLOR;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -781,9 +787,9 @@ App.drawImageOnCanvas = function(img) {
     }
 };
 
-App.drawPlaceholderImage = function() {
+App.drawPlaceholderImage = function () {
     if (!this.ctx || !this.canvas) return;
-    
+
     this.ctx.fillStyle = BACKGROUND_COLOR;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -805,7 +811,7 @@ function getInitialScale() {
     return 1;
 }
 
-App.loadImageFromFile = function(image) {
+App.loadImageFromFile = function (image) {
     this.showLoading('Загрузка теста...');
 
     const img = new Image();
