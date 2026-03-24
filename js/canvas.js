@@ -623,6 +623,9 @@ function sendEmail() {
     const confirmBtnReset = document.getElementById('btn-send-email-confirm');
     if (confirmBtnReset) confirmBtnReset.disabled = false;
 
+    const cancelBtnReset = document.getElementById('btn-send-email-cancel');
+    if (cancelBtnReset) cancelBtnReset.disabled = false;
+
     const validateEmail = (email) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     };
@@ -660,6 +663,9 @@ function sendEmail() {
 
         sending.classList.add('hidden');
         success.classList.remove('hidden');
+
+        const cancelBtn = document.getElementById('btn-send-email-cancel');
+        if (cancelBtn) cancelBtn.disabled = true;
 
         setTimeout(closeModal, 2000);
     };
