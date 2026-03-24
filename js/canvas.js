@@ -635,6 +635,7 @@ function sendEmail() {
 
     const sendHandler = async () => {
         const email = input.value.trim();
+        const btn = document.getElementById('btn-send-email-confirm');
 
         if (!email) {
             error.textContent = 'Введите email';
@@ -650,6 +651,7 @@ function sendEmail() {
 
         error.classList.add('hidden');
         sending.classList.remove('hidden');
+        if (btn) btn.disabled = true;
 
         await sendResultsToEmail(email);
 
@@ -691,7 +693,7 @@ async function sendResultsToEmail(email) {
         formData.append('stats', JSON.stringify(stats));
         formData.append('results', JSON.stringify(results));
         formData.append('userData', JSON.stringify(userData));
-
+        
         const response = await fetch('https://api.cloud-platform.pro/email/mpptests/send', {
             method: 'POST',
             body: formData
