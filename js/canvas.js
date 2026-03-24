@@ -620,6 +620,9 @@ function sendEmail() {
     success.classList.add('hidden');
     modal.classList.remove('hidden');
 
+    const confirmBtnReset = document.getElementById('btn-send-email-confirm');
+    if (confirmBtnReset) confirmBtnReset.disabled = false;
+
     const validateEmail = (email) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     };
