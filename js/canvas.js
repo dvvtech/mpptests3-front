@@ -574,10 +574,16 @@ function showResults(stats, data, meta) {
             <ul class="list-disc list-inside space-y-1">${recsHtml}</ul>
         </div>` : ''}
 
-        <button id="btn-send-email"
-            class="w-full mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-2">
-            <i class="fas fa-envelope"></i> Отправить на почту
-        </button>
+        <div class="flex gap-2 mt-2">
+            <button id="btn-send-email"
+                class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-2">
+                <i class="fas fa-envelope"></i> Отправить на почту
+            </button>
+            <button id="btn-save-results"
+                class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition flex items-center justify-center gap-2">
+                <i class="fas fa-save"></i> Сохранить
+            </button>
+        </div>
     `;
 
     App.state.lastResults = data;
@@ -585,6 +591,9 @@ function showResults(stats, data, meta) {
 
     const emailBtn = document.getElementById('btn-send-email');
     if (emailBtn) emailBtn.addEventListener('click', sendEmail);
+
+    const saveBtn = document.getElementById('btn-save-results');
+    if (saveBtn) saveBtn.addEventListener('click', saveResults);
 
     const closeBtn = document.getElementById('btn-close-results');
     if (closeBtn) closeBtn.addEventListener('click', closeResults);
@@ -862,3 +871,49 @@ App.loadImageFromFile = function (image) {
 
     img.src = image.filename;
 };
+
+async function saveResults() {
+    const resultsScroll = document.getElementById('results-scroll');
+    const canvasEl = document.getElementById('coloring-canvas');
+    
+    if (!resultsScroll) return;
+
+    const originalOverflow = resultsScroll.style.overflow;
+    const originalHeight = resultsScroll.style.height;
+    const originalMaxHeight = resultsScroll.style.maxHeight;
+    
+    resultsScroll.style.overflow = 'visible';
+    resultsScroll.style.height = 'auto';
+    resultsScroll.style.maxHeight = 'none';
+
+    try {
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        const resultsCanvas = await html2canvas(resultsScroll, {
+            backgroundColor: '#ffffff',
+            scale: 2,
+            useCORS: true,
+            logging: false
+        });
+
+        const resultsLink = document.createElement('a');
+        resultsLink.download = 'результаты-анализа.png';
+        resultsLink.href = resultsCanvas.toDataURL('image/png');
+        resultsLink.click();
+
+        if (canvasEl) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            const canvasLink = document.createElement('a');
+            canvasLink.download = 'тест-холст.png';
+            canvasLink.href = canvasEl.toDataURL('image/png');
+            canvasLink.click();
+        }
+    } catch (error) {
+        console.error('Ошибка при сохранении:', error);
+    } finally {
+        resultsScroll.style.overflow = originalOverflow;
+        resultsScroll.style.height = originalHeight;
+        resultsScroll.style.maxHeight = originalMaxHeight;
+    }
+}
