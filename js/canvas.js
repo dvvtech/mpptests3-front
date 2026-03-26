@@ -896,8 +896,11 @@ async function saveResults() {
             logging: false
         });
 
+        const now = new Date();
+        const dateStr = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}:${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+
         const resultsLink = document.createElement('a');
-        resultsLink.download = 'результаты-анализа.png';
+        resultsLink.download = `результаты-анализа_${dateStr}.png`;
         resultsLink.href = resultsCanvas.toDataURL('image/png');
         resultsLink.click();
 
@@ -905,7 +908,7 @@ async function saveResults() {
             await new Promise(resolve => setTimeout(resolve, 300));
             
             const canvasLink = document.createElement('a');
-            canvasLink.download = 'тест-холст.png';
+            canvasLink.download = `тест-холст_${dateStr}.png`;
             canvasLink.href = canvasEl.toDataURL('image/png');
             canvasLink.click();
         }
