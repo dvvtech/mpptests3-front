@@ -636,15 +636,15 @@ function showResults(stats, data, meta) {
 
         <div class="flex flex-wrap gap-2 mt-2">
             <button id="btn-send-email"
-                class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-2">
+                class="min-w-0 flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-2">
                 <i class="fas fa-envelope"></i> Отправить на почту
             </button>
             <button id="btn-save-results"
-                class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition flex items-center justify-center gap-2">
+                class="min-w-0 flex-1 px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition flex items-center justify-center gap-2">
                 <i class="fas fa-save"></i> Сохранить
             </button>
             <button id="btn-share-results"
-                class="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600 transition flex items-center justify-center gap-2">
+                class="min-w-0 flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600 transition flex items-center justify-center gap-2">
                 <i class="fas fa-share-alt"></i> Поделиться
             </button>
         </div>
