@@ -446,7 +446,7 @@ async function shareResults() {
 
         await navigator.share({
             title: 'Результаты теста',
-            text: 'Результаты психологического теста',
+            text: 'Результаты теста',
             files: files
         });
     } catch (error) {
