@@ -401,30 +401,22 @@ function togglePan() {
     }
 }
 
-async function shareResults() {
+async function createCombinedCanvas() {
     const resultsScroll = document.getElementById('results-scroll');
     const canvasEl = document.getElementById('coloring-canvas');
-
-    if (!resultsScroll) return;
-
-    if (!navigator.share || !navigator.canShare) {
-        alert('Функция "Поделиться" не поддерживается вашим браузером. Используйте кнопку "Сохранить".');
-        return;
-    }
+    
+    if (!resultsScroll || !canvasEl) return null;
 
     const originalOverflow = resultsScroll.style.overflow;
     const originalHeight = resultsScroll.style.height;
     const originalMaxHeight = resultsScroll.style.maxHeight;
-
+    
     resultsScroll.style.overflow = 'visible';
     resultsScroll.style.height = 'auto';
     resultsScroll.style.maxHeight = 'none';
 
     try {
         await new Promise(resolve => setTimeout(resolve, 100));
-
-        const now = new Date();
-        const dateStr = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}:${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
 
         const resultsCanvas = await html2canvas(resultsScroll, {
             backgroundColor: '#ffffff',
@@ -433,31 +425,64 @@ async function shareResults() {
             logging: false
         });
 
-        const resultsBlob = await new Promise(resolve => resultsCanvas.toBlob(resolve, 'image/png'));
-        const resultsFile = new File([resultsBlob], `результаты-анализа_${dateStr}.png`, { type: 'image/png' });
+        const canvasCopy = document.createElement('canvas');
+        canvasCopy.width = canvasEl.width;
+        canvasCopy.height = canvasEl.height;
+        const copyCtx = canvasCopy.getContext('2d');
+        copyCtx.fillStyle = '#ffffff';
+        copyCtx.fillRect(0, 0, canvasCopy.width, canvasCopy.height);
+        copyCtx.drawImage(canvasEl, 0, 0);
 
-        const files = [resultsFile];
+        const gap = 20;
+        const combinedCanvas = document.createElement('canvas');
+        combinedCanvas.width = canvasCopy.width + gap + resultsCanvas.width;
+        combinedCanvas.height = Math.max(canvasCopy.height, resultsCanvas.height);
+        const combinedCtx = combinedCanvas.getContext('2d');
+        
+        combinedCtx.fillStyle = '#ffffff';
+        combinedCtx.fillRect(0, 0, combinedCanvas.width, combinedCanvas.height);
+        
+        const canvasY = (combinedCanvas.height - canvasCopy.height) / 2;
+        const resultsY = (combinedCanvas.height - resultsCanvas.height) / 2;
+        
+        combinedCtx.drawImage(canvasCopy, 0, canvasY);
+        combinedCtx.drawImage(resultsCanvas, canvasCopy.width + gap, resultsY);
 
-        if (canvasEl) {
-            const canvasBlob = await new Promise(resolve => canvasEl.toBlob(resolve, 'image/png'));
-            const canvasFile = new File([canvasBlob], `тест-холст_${dateStr}.png`, { type: 'image/png' });
-            files.push(canvasFile);
-        }
+        return combinedCanvas;
+    } finally {
+        resultsScroll.style.overflow = originalOverflow;
+        resultsScroll.style.height = originalHeight;
+        resultsScroll.style.maxHeight = originalMaxHeight;
+    }
+}
+
+async function shareResults() {
+    const combinedCanvas = await createCombinedCanvas();
+    
+    if (!combinedCanvas) return;
+
+    if (!navigator.share || !navigator.canShare) {
+        alert('Функция "Поделиться" не поддерживается вашим браузером. Используйте кнопку "Сохранить".');
+        return;
+    }
+
+    try {
+        const now = new Date();
+        const dateStr = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}:${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+
+        const blob = await new Promise(resolve => combinedCanvas.toBlob(resolve, 'image/png'));
+        const file = new File([blob], `результаты-теста_${dateStr}.png`, { type: 'image/png' });
 
         await navigator.share({
             title: 'Результаты теста',
             text: 'Результаты теста',
-            files: files
+            files: [file]
         });
     } catch (error) {
         if (error.name !== 'AbortError') {
             console.error('Ошибка при отправке:', error);
             alert('Не удалось поделиться. Попробуйте сохранить файлы.');
         }
-    } finally {
-        resultsScroll.style.overflow = originalOverflow;
-        resultsScroll.style.height = originalHeight;
-        resultsScroll.style.maxHeight = originalMaxHeight;
     }
 }
 
@@ -940,50 +965,19 @@ App.loadImageFromFile = function (image) {
 };
 
 async function saveResults() {
-    const resultsScroll = document.getElementById('results-scroll');
-    const canvasEl = document.getElementById('coloring-canvas');
-
-    if (!resultsScroll) return;
-
-    const originalOverflow = resultsScroll.style.overflow;
-    const originalHeight = resultsScroll.style.height;
-    const originalMaxHeight = resultsScroll.style.maxHeight;
-
-    resultsScroll.style.overflow = 'visible';
-    resultsScroll.style.height = 'auto';
-    resultsScroll.style.maxHeight = 'none';
+    const combinedCanvas = await createCombinedCanvas();
+    
+    if (!combinedCanvas) return;
 
     try {
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        const resultsCanvas = await html2canvas(resultsScroll, {
-            backgroundColor: '#ffffff',
-            scale: 2,
-            useCORS: true,
-            logging: false
-        });
-
         const now = new Date();
         const dateStr = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}:${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
 
-        const resultsLink = document.createElement('a');
-        resultsLink.download = `результаты-анализа_${dateStr}.png`;
-        resultsLink.href = resultsCanvas.toDataURL('image/png');
-        resultsLink.click();
-
-        if (canvasEl) {
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            const canvasLink = document.createElement('a');
-            canvasLink.download = `тест-холст_${dateStr}.png`;
-            canvasLink.href = canvasEl.toDataURL('image/png');
-            canvasLink.click();
-        }
+        const link = document.createElement('a');
+        link.download = `результаты-теста_${dateStr}.png`;
+        link.href = combinedCanvas.toDataURL('image/png');
+        link.click();
     } catch (error) {
         console.error('Ошибка при сохранении:', error);
-    } finally {
-        resultsScroll.style.overflow = originalOverflow;
-        resultsScroll.style.height = originalHeight;
-        resultsScroll.style.maxHeight = originalMaxHeight;
     }
 }
