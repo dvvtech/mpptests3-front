@@ -411,6 +411,11 @@ async function createCombinedCanvas() {
     const originalHeight = resultsScroll.style.height;
     const originalMaxHeight = resultsScroll.style.maxHeight;
     
+    const buttonsContainer = resultsScroll.querySelector('.flex.flex-wrap.gap-2.mt-2');
+    const buttonsDisplay = buttonsContainer ? buttonsContainer.style.display : '';
+    
+    if (buttonsContainer) buttonsContainer.style.display = 'none';
+    
     resultsScroll.style.overflow = 'visible';
     resultsScroll.style.height = 'auto';
     resultsScroll.style.maxHeight = 'none';
@@ -453,6 +458,7 @@ async function createCombinedCanvas() {
         resultsScroll.style.overflow = originalOverflow;
         resultsScroll.style.height = originalHeight;
         resultsScroll.style.maxHeight = originalMaxHeight;
+        if (buttonsContainer) buttonsContainer.style.display = buttonsDisplay;
     }
 }
 
