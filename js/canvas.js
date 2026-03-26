@@ -401,6 +401,66 @@ function togglePan() {
     }
 }
 
+async function shareResults() {
+    const resultsScroll = document.getElementById('results-scroll');
+    const canvasEl = document.getElementById('coloring-canvas');
+
+    if (!resultsScroll) return;
+
+    if (!navigator.share || !navigator.canShare) {
+        alert('Функция "Поделиться" не поддерживается вашим браузером. Используйте кнопку "Сохранить".');
+        return;
+    }
+
+    const originalOverflow = resultsScroll.style.overflow;
+    const originalHeight = resultsScroll.style.height;
+    const originalMaxHeight = resultsScroll.style.maxHeight;
+
+    resultsScroll.style.overflow = 'visible';
+    resultsScroll.style.height = 'auto';
+    resultsScroll.style.maxHeight = 'none';
+
+    try {
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        const now = new Date();
+        const dateStr = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}:${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+
+        const resultsCanvas = await html2canvas(resultsScroll, {
+            backgroundColor: '#ffffff',
+            scale: 2,
+            useCORS: true,
+            logging: false
+        });
+
+        const resultsBlob = await new Promise(resolve => resultsCanvas.toBlob(resolve, 'image/png'));
+        const resultsFile = new File([resultsBlob], `результаты-анализа_${dateStr}.png`, { type: 'image/png' });
+
+        const files = [resultsFile];
+
+        if (canvasEl) {
+            const canvasBlob = await new Promise(resolve => canvasEl.toBlob(resolve, 'image/png'));
+            const canvasFile = new File([canvasBlob], `тест-холст_${dateStr}.png`, { type: 'image/png' });
+            files.push(canvasFile);
+        }
+
+        await navigator.share({
+            title: 'Результаты теста',
+            text: 'Результаты психологического теста',
+            files: files
+        });
+    } catch (error) {
+        if (error.name !== 'AbortError') {
+            console.error('Ошибка при отправке:', error);
+            alert('Не удалось поделиться. Попробуйте сохранить файлы.');
+        }
+    } finally {
+        resultsScroll.style.overflow = originalOverflow;
+        resultsScroll.style.height = originalHeight;
+        resultsScroll.style.maxHeight = originalMaxHeight;
+    }
+}
+
 function centerCanvas() {
     App.state.scale = 1;
     App.state.offsetX = 0;
@@ -583,6 +643,10 @@ function showResults(stats, data, meta) {
                 class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition flex items-center justify-center gap-2">
                 <i class="fas fa-save"></i> Сохранить
             </button>
+            <button id="btn-share-results"
+                class="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600 transition flex items-center justify-center gap-2">
+                <i class="fas fa-share-alt"></i> Поделиться
+            </button>
         </div>
     `;
 
@@ -594,6 +658,9 @@ function showResults(stats, data, meta) {
 
     const saveBtn = document.getElementById('btn-save-results');
     if (saveBtn) saveBtn.addEventListener('click', saveResults);
+
+    const shareBtn = document.getElementById('btn-share-results');
+    if (shareBtn) shareBtn.addEventListener('click', shareResults);
 
     const closeBtn = document.getElementById('btn-close-results');
     if (closeBtn) closeBtn.addEventListener('click', closeResults);
@@ -711,7 +778,7 @@ async function sendResultsToEmail(email) {
         formData.append('stats', JSON.stringify(stats));
         formData.append('results', JSON.stringify(results));
         formData.append('userData', JSON.stringify(userData));
-        
+
         const response = await fetch('https://api.cloud-platform.pro/email/mpptests/send', {
             method: 'POST',
             body: formData
@@ -875,13 +942,13 @@ App.loadImageFromFile = function (image) {
 async function saveResults() {
     const resultsScroll = document.getElementById('results-scroll');
     const canvasEl = document.getElementById('coloring-canvas');
-    
+
     if (!resultsScroll) return;
 
     const originalOverflow = resultsScroll.style.overflow;
     const originalHeight = resultsScroll.style.height;
     const originalMaxHeight = resultsScroll.style.maxHeight;
-    
+
     resultsScroll.style.overflow = 'visible';
     resultsScroll.style.height = 'auto';
     resultsScroll.style.maxHeight = 'none';
@@ -906,7 +973,7 @@ async function saveResults() {
 
         if (canvasEl) {
             await new Promise(resolve => setTimeout(resolve, 300));
-            
+
             const canvasLink = document.createElement('a');
             canvasLink.download = `тест-холст_${dateStr}.png`;
             canvasLink.href = canvasEl.toDataURL('image/png');
