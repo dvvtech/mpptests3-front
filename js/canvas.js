@@ -634,7 +634,7 @@ function showResults(stats, data, meta) {
             <ul class="list-disc list-inside space-y-1">${recsHtml}</ul>
         </div>` : ''}
 
-        <div class="flex gap-2 mt-2">
+        <div class="flex flex-wrap gap-2 mt-2">
             <button id="btn-send-email"
                 class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-2">
                 <i class="fas fa-envelope"></i> Отправить на почту
