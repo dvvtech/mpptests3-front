@@ -200,6 +200,7 @@ function onTouchStart(e) {
     if (e.touches.length === 2 && App.state.isPanning) {
         e.preventDefault();
         isDrawing = false;
+        isPanning = false;
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const midpointX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
@@ -266,6 +267,16 @@ function onTouchEnd(e) {
     if (e.touches.length < 2) {
         initialPinchDistance = 0;
     }
+
+    if (e.touches.length === 1 && App.state.isPanning) {
+        const touch = e.touches[0];
+        isPanning = true;
+        panStartX = touch.clientX;
+        panStartY = touch.clientY;
+        panStartOffsetX = App.state.offsetX;
+        panStartOffsetY = App.state.offsetY;
+    }
+
     if (e.touches.length === 0) {
         if (isDrawing) {
             isDrawing = false;
