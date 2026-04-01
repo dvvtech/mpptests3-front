@@ -10,6 +10,10 @@ let panStartOffsetX = 0;
 let panStartOffsetY = 0;
 let initialPinchDistance = 0;
 let initialPinchScale = 1;
+let initialPinchOffsetX = 0;
+let initialPinchOffsetY = 0;
+let pinchCenterX = 0;
+let pinchCenterY = 0;
 
 function initColoring() {
     canvas = document.getElementById('coloring-canvas');
@@ -202,6 +206,10 @@ function onTouchStart(e) {
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
         initialPinchScale = App.state.scale;
+        initialPinchOffsetX = App.state.offsetX;
+        initialPinchOffsetY = App.state.offsetY;
+        pinchCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        pinchCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
     } else if (e.touches.length === 1) {
         e.preventDefault();
         const touch = e.touches[0];
@@ -227,9 +235,11 @@ function onTouchMove(e) {
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        const scale = initialPinchScale * (distance / initialPinchDistance);
-        App.state.scale = Math.min(Math.max(scale, 0.2), 5);
-        App.state.scale = Math.round(App.state.scale * 10) / 10;
+        const newScale = Math.min(Math.max(initialPinchScale * (distance / initialPinchDistance), 0.2), 5);
+        App.state.scale = Math.round(newScale * 10) / 10;
+        const scaleRatio = newScale / initialPinchScale;
+        App.state.offsetX = pinchCenterX - (pinchCenterX - initialPinchOffsetX) * scaleRatio;
+        App.state.offsetY = pinchCenterY - (pinchCenterY - initialPinchOffsetY) * scaleRatio;
         applyTransform();
     } else if (e.touches.length === 1) {
         e.preventDefault();
@@ -252,6 +262,16 @@ function onTouchMove(e) {
 function onTouchEnd(e) {
     if (e.touches.length < 2) {
         initialPinchDistance = 0;
+    }
+    if (e.touches.length === 0) {
+        if (isDrawing) {
+            isDrawing = false;
+            App.saveState();
+        }
+        isPanning = false;
+        initialPinchScale = App.state.scale;
+        initialPinchOffsetX = App.state.offsetX;
+        initialPinchOffsetY = App.state.offsetY;
     }
     if (e.touches.length === 0) {
         if (isDrawing) {
@@ -297,7 +317,7 @@ function applyTransform() {
     const rot = App.state.rotation;
 
     canvas.style.transform = `translate(${ox}px, ${oy}px) rotate(${rot}deg) scale(${s})`;
-    canvas.style.transformOrigin = 'center center';
+    canvas.style.transformOrigin = '0 0';
 
     const zoomLevel = document.getElementById('zoom-level');
     if (zoomLevel) zoomLevel.textContent = Math.round(s * 100) + '%';
