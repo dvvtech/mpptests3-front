@@ -407,24 +407,23 @@ async function createCombinedCanvas() {
     
     if (!resultsScroll || !canvasEl) return null;
 
-    const originalOverflow = resultsScroll.style.overflow;
-    const originalHeight = resultsScroll.style.height;
-    const originalMaxHeight = resultsScroll.style.maxHeight;
-    const originalScrollTop = resultsScroll.scrollTop;
+    const clone = resultsScroll.cloneNode(true);
+    clone.style.position = 'absolute';
+    clone.style.left = '-9999px';
+    clone.style.top = '0';
+    clone.style.overflow = 'visible';
+    clone.style.height = 'auto';
+    clone.style.maxHeight = 'none';
+    clone.style.width = resultsScroll.offsetWidth + 'px';
     
-    const buttonsContainer = resultsScroll.querySelector('.flex.flex-wrap.gap-2.mt-2');
-    const buttonsDisplay = buttonsContainer ? buttonsContainer.style.display : '';
+    const buttonsClone = clone.querySelector('.flex.flex-wrap.gap-2.mt-2');
+    if (buttonsClone) buttonsClone.style.display = 'none';
     
-    if (buttonsContainer) buttonsContainer.style.display = 'none';
-    
-    resultsScroll.style.overflow = 'visible';
-    resultsScroll.style.height = 'auto';
-    resultsScroll.style.maxHeight = 'none';
+    document.body.appendChild(clone);
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        const resultsCanvas = await html2canvas(resultsScroll, {
+        const resultsCanvas = await html2canvas(clone, {
             backgroundColor: '#ffffff',
             scale: 2,
             useCORS: true,
@@ -456,11 +455,7 @@ async function createCombinedCanvas() {
 
         return combinedCanvas;
     } finally {
-        resultsScroll.style.overflow = originalOverflow;
-        resultsScroll.style.height = originalHeight;
-        resultsScroll.style.maxHeight = originalMaxHeight;
-        resultsScroll.scrollTop = originalScrollTop;
-        if (buttonsContainer) buttonsContainer.style.display = buttonsDisplay;
+        document.body.removeChild(clone);
     }
 }
 
@@ -568,11 +563,16 @@ function calculate() {
         .catch(error => {
             App.hideLoading();
             console.error('API Error:', error);
-            App.showModal('Сервис недоступен', 'Сервис сейчас недоступен, попробуйте позже.', [{ text: 'OK' }]);
-            /*отображение демо результатов
+            let isRelease = true;
+            if(isRelease){
+                App.showModal('Сервис недоступен', 'Сервис сейчас недоступен, попробуйте позже.', [{ text: 'OK' }]);
+            }
+            else{
+            //отображение демо результатов
             const demoResponse = getDemoResponse();
             showResults(stats, demoResponse, meta);
-            updateScaleByWindowSize();*/
+            updateScaleByWindowSize();
+            }
         });
 }
 
