@@ -566,9 +566,11 @@ function calculate() {
         .catch(error => {
             App.hideLoading();
             console.error('API Error:', error);
+            App.showModal('Сервис недоступен', 'Сервис сейчас недоступен, попробуйте позже.', [{ text: 'OK' }]);
+            /*отображение демо результатов
             const demoResponse = getDemoResponse();
             showResults(stats, demoResponse, meta);
-            updateScaleByWindowSize();
+            updateScaleByWindowSize();*/
         });
 }
 
