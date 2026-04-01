@@ -410,6 +410,7 @@ async function createCombinedCanvas() {
     const originalOverflow = resultsScroll.style.overflow;
     const originalHeight = resultsScroll.style.height;
     const originalMaxHeight = resultsScroll.style.maxHeight;
+    const originalScrollTop = resultsScroll.scrollTop;
     
     const buttonsContainer = resultsScroll.querySelector('.flex.flex-wrap.gap-2.mt-2');
     const buttonsDisplay = buttonsContainer ? buttonsContainer.style.display : '';
@@ -458,6 +459,7 @@ async function createCombinedCanvas() {
         resultsScroll.style.overflow = originalOverflow;
         resultsScroll.style.height = originalHeight;
         resultsScroll.style.maxHeight = originalMaxHeight;
+        resultsScroll.scrollTop = originalScrollTop;
         if (buttonsContainer) buttonsContainer.style.display = buttonsDisplay;
     }
 }
