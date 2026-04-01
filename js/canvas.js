@@ -278,7 +278,12 @@ function onTouchEnd(e) {
 function onWheel(e) {
     e.preventDefault();
     const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    zoomBy(delta);
+    const anchorPos = getCanvasPos(e.clientX, e.clientY);
+    const newScale = Math.min(Math.max(App.state.scale + delta, 0.2), 5);
+
+    App.state.scale = Math.round(newScale * 10) / 10;
+    applyZoomAnchor(e.clientX, e.clientY, anchorPos.x, anchorPos.y);
+    applyTransform();
 }
 
 function drawDot(x, y) {
@@ -317,6 +322,10 @@ function applyTransform() {
 }
 
 function applyPinchTransform(midpointX, midpointY) {
+    applyZoomAnchor(midpointX, midpointY, pinchAnchorCanvasX, pinchAnchorCanvasY);
+}
+
+function applyZoomAnchor(clientX, clientY, anchorCanvasX, anchorCanvasY) {
     const wrapper = document.getElementById('canvas-wrapper');
     if (!wrapper || !canvas) return;
 
@@ -325,8 +334,8 @@ function applyPinchTransform(midpointX, midpointY) {
 
     const centerX = wrapperRect.left + wrapperRect.width / 2;
     const centerY = wrapperRect.top + wrapperRect.height / 2;
-    const relativeX = (pinchAnchorCanvasX / canvas.width - 0.5) * wrapperRect.width;
-    const relativeY = (pinchAnchorCanvasY / canvas.height - 0.5) * wrapperRect.height;
+    const relativeX = (anchorCanvasX / canvas.width - 0.5) * wrapperRect.width;
+    const relativeY = (anchorCanvasY / canvas.height - 0.5) * wrapperRect.height;
     const angle = ((App.state.rotation % 360) + 360) % 360;
 
     let rotatedX = relativeX;
@@ -347,8 +356,8 @@ function applyPinchTransform(midpointX, midpointY) {
             break;
     }
 
-    App.state.offsetX = midpointX - centerX - rotatedX * App.state.scale;
-    App.state.offsetY = midpointY - centerY - rotatedY * App.state.scale;
+    App.state.offsetX = clientX - centerX - rotatedX * App.state.scale;
+    App.state.offsetY = clientY - centerY - rotatedY * App.state.scale;
 }
 
 function initToolButtons() {
