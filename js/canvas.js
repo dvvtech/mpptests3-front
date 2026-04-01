@@ -460,7 +460,9 @@ async function createCombinedCanvas() {
 }
 
 async function shareResults() {
+    App.showLoading('Подготовка изображения...');
     const combinedCanvas = await createCombinedCanvas();
+    App.hideLoading();
     
     if (!combinedCanvas) return;
 
@@ -563,7 +565,7 @@ function calculate() {
         .catch(error => {
             App.hideLoading();
             console.error('API Error:', error);
-            let isRelease = true;
+            let isRelease = false;
             if(isRelease){
                 App.showModal('Сервис недоступен', 'Сервис сейчас недоступен, попробуйте позже.', [{ text: 'OK' }]);
             }
@@ -981,7 +983,9 @@ App.loadImageFromFile = function (image) {
 };
 
 async function saveResults() {
+    App.showLoading('Подготовка изображения...');
     const combinedCanvas = await createCombinedCanvas();
+    App.hideLoading();
     
     if (!combinedCanvas) return;
 
