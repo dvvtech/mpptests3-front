@@ -10,6 +10,8 @@ let panStartOffsetX = 0;
 let panStartOffsetY = 0;
 let initialPinchDistance = 0;
 let initialPinchScale = 1;
+let pinchAnchorCanvasX = 0;
+let pinchAnchorCanvasY = 0;
 
 function initColoring() {
     canvas = document.getElementById('coloring-canvas');
@@ -200,8 +202,13 @@ function onTouchStart(e) {
         isDrawing = false;
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const midpointX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const midpointY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        const anchorPos = getCanvasPos(midpointX, midpointY);
         initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
         initialPinchScale = App.state.scale;
+        pinchAnchorCanvasX = anchorPos.x;
+        pinchAnchorCanvasY = anchorPos.y;
     } else if (e.touches.length === 1) {
         e.preventDefault();
         const touch = e.touches[0];
@@ -227,9 +234,15 @@ function onTouchMove(e) {
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        const scale = initialPinchScale * (distance / initialPinchDistance);
+        const midpointX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const midpointY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        const scale = initialPinchDistance > 0
+            ? initialPinchScale * (distance / initialPinchDistance)
+            : initialPinchScale;
+
         App.state.scale = Math.min(Math.max(scale, 0.2), 5);
         App.state.scale = Math.round(App.state.scale * 10) / 10;
+        applyPinchTransform(midpointX, midpointY);
         applyTransform();
     } else if (e.touches.length === 1) {
         e.preventDefault();
@@ -301,6 +314,41 @@ function applyTransform() {
 
     const zoomLevel = document.getElementById('zoom-level');
     if (zoomLevel) zoomLevel.textContent = Math.round(s * 100) + '%';
+}
+
+function applyPinchTransform(midpointX, midpointY) {
+    const wrapper = document.getElementById('canvas-wrapper');
+    if (!wrapper || !canvas) return;
+
+    const wrapperRect = wrapper.getBoundingClientRect();
+    if (!wrapperRect.width || !wrapperRect.height) return;
+
+    const centerX = wrapperRect.left + wrapperRect.width / 2;
+    const centerY = wrapperRect.top + wrapperRect.height / 2;
+    const relativeX = (pinchAnchorCanvasX / canvas.width - 0.5) * wrapperRect.width;
+    const relativeY = (pinchAnchorCanvasY / canvas.height - 0.5) * wrapperRect.height;
+    const angle = ((App.state.rotation % 360) + 360) % 360;
+
+    let rotatedX = relativeX;
+    let rotatedY = relativeY;
+
+    switch (angle) {
+        case 90:
+            rotatedX = -relativeY;
+            rotatedY = relativeX;
+            break;
+        case 180:
+            rotatedX = -relativeX;
+            rotatedY = -relativeY;
+            break;
+        case 270:
+            rotatedX = relativeY;
+            rotatedY = -relativeX;
+            break;
+    }
+
+    App.state.offsetX = midpointX - centerX - rotatedX * App.state.scale;
+    App.state.offsetY = midpointY - centerY - rotatedY * App.state.scale;
 }
 
 function initToolButtons() {
