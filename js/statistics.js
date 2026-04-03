@@ -1,38 +1,40 @@
+const statisticsColorLookup = new Map(
+    appConfig.colors.map(color => {
+        const rgb = hexToRgb(color.hex);
+        return [((rgb.r << 16) | (rgb.g << 8) | rgb.b), { name: color.name, hex: color.hex }];
+    })
+);
+
 function calculateColorStatistics() {
     if (!canvas || !ctx) return [];
-    
+
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const pixels = imageData.data;
     const colorCounts = {};
-    
+    let totalPixels = 0;
+
     for (let i = 0; i < pixels.length; i += 4) {
-        const r = pixels[i];
-        const g = pixels[i + 1];
-        const b = pixels[i + 2];
         const a = pixels[i + 3];
-        
+
         if (a < 100) continue;
-        
-        const hex = rgbToHex(r, g, b);
-        
-        const colorName = findClosestColorName(hex);
-        
-        if (!colorName) continue;
-        
-        if (!colorCounts[colorName]) {
-            const colorConfig = appConfig.colors.find(c => c.name === colorName);
-            colorCounts[colorName] = {
-                name: colorName,
+
+        const colorConfig = statisticsColorLookup.get((pixels[i] << 16) | (pixels[i + 1] << 8) | pixels[i + 2]);
+
+        if (!colorConfig) continue;
+
+        if (!colorCounts[colorConfig.name]) {
+            colorCounts[colorConfig.name] = {
+                name: colorConfig.name,
                 count: 0,
-                hex: colorConfig ? colorConfig.hex : hex
+                hex: colorConfig.hex
             };
         }
-        colorCounts[colorName].count++;
+
+        colorCounts[colorConfig.name].count++;
+        totalPixels++;
     }
-    
-    const totalPixels = Object.values(colorCounts).reduce((sum, c) => sum + c.count, 0);
-    
-    const result = Object.values(colorCounts)
+
+    return Object.values(colorCounts)
         .filter(c => c.count >= 10)
         .map(c => ({
             name: c.name,
@@ -41,6 +43,4 @@ function calculateColorStatistics() {
             hex: c.hex
         }))
         .sort((a, b) => b.count - a.count);
-    
-    return result;
 }

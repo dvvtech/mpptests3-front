@@ -589,7 +589,15 @@ function clearCanvas() {
     );
 }
 
-function calculate() {
+function waitForNextPaint() {
+    return new Promise(resolve => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(resolve);
+        });
+    });
+}
+
+async function calculate() {
 
     if (App.state.usedColors.size === 0) {
         App.showModal('Предупреждение', 'Вы не использовали ни одного цвета для раскраски. Пожалуйста, раскрасьте тест перед анализом.', [{ text: 'OK' }]);
@@ -597,6 +605,8 @@ function calculate() {
     }
 
     App.showLoading('Анализ данных...');
+
+    await waitForNextPaint();
 
     const stats = calculateColorStatistics();
 
@@ -624,26 +634,25 @@ function calculate() {
         version: 1
     };
 
-    sendAnalysisRequest(requestData)
-        .then(response => {
-            App.hideLoading();
-            showResults(stats, response, meta);
-            updateScaleByWindowSize();
-        })
-        .catch(error => {
-            App.hideLoading();
-            console.error('API Error:', error);
-            let isRelease = false;
-            if(isRelease){
-                App.showModal('Сервис недоступен', 'Сервис сейчас недоступен, попробуйте позже.', [{ text: 'OK' }]);
-            }
-            else{
-            //отображение демо результатов
-            const demoResponse = getDemoResponse();
-            showResults(stats, demoResponse, meta);
-            updateScaleByWindowSize();
-            }
-        });
+    try {
+        const response = await sendAnalysisRequest(requestData);
+        App.hideLoading();
+        showResults(stats, response, meta);
+        updateScaleByWindowSize();
+    } catch (error) {
+        App.hideLoading();
+        console.error('API Error:', error);
+        let isRelease = false;
+        if(isRelease){
+            App.showModal('Сервис недоступен', 'Сервис сейчас недоступен, попробуйте позже.', [{ text: 'OK' }]);
+        }
+        else{
+        //отображение демо результатов
+        const demoResponse = getDemoResponse();
+        showResults(stats, demoResponse, meta);
+        updateScaleByWindowSize();
+        }
+    }
 }
 
 function updateScaleByWindowSize() {
