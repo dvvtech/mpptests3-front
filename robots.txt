@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /settings.html
+Disallow: /coloring.html
+Disallow: /test-canvas.html
+
+Sitemap: https://mpptests.com/sitemap.xml
