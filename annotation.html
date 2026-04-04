@@ -5,6 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Аннотация и введение</title>
+    <script>
+        if (window.location.pathname.endsWith('/annotation.html')) {
+            const cleanPath = window.location.pathname.slice(0, -5);
+            window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
@@ -15,7 +21,7 @@
 
     <main class="min-h-screen px-4 py-8 md:py-10">
         <div class="max-w-4xl mx-auto">
-            <a href="index.html"
+            <a href="/"
                 class="inline-flex items-center gap-2 px-4 py-2 mb-6 bg-white text-blue-600 rounded-xl shadow-sm hover:bg-blue-50 transition">
                 <i class="fas fa-arrow-left"></i>
                 На главную
