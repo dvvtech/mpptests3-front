@@ -6,9 +6,12 @@ const statisticsColorLookup = new Map(
 );
 
 function calculateColorStatistics() {
-    if (!canvas || !ctx) return [];
+    const statisticsCanvas = App.paintCanvas || canvas;
+    const statisticsCtx = App.paintCtx || ctx;
 
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    if (!statisticsCanvas || !statisticsCtx) return [];
+
+    const imageData = statisticsCtx.getImageData(0, 0, statisticsCanvas.width, statisticsCanvas.height);
     const pixels = imageData.data;
     const colorCounts = {};
     let totalPixels = 0;

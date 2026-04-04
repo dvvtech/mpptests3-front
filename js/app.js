@@ -1,4 +1,5 @@
 const BACKGROUND_COLOR = '#EDEDED';
+const COLORING_OPACITY = 0.8;
 
 const appConfig = {
     canvasWidth: 785,

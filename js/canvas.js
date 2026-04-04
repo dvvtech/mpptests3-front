@@ -1,5 +1,9 @@
 let canvas = null;
 let ctx = null;
+let baseCanvas = null;
+let baseCtx = null;
+let paintCanvas = null;
+let paintCtx = null;
 let isDrawing = false;
 let lastX = 0;
 let lastY = 0;
@@ -18,6 +22,7 @@ function initColoring() {
     if (!canvas) return;
 
     ctx = canvas.getContext('2d');
+    ensureLayerCanvases();
     App.canvas = canvas;
     App.ctx = ctx;
 
@@ -41,6 +46,53 @@ function initColoring() {
 
     App.drawPlaceholderImage();
     App.updateUndoRedoButtons();
+}
+
+function ensureLayerCanvases() {
+    if (!canvas) return false;
+
+    const needsRecreate =
+        !baseCanvas ||
+        !paintCanvas ||
+        baseCanvas.width !== canvas.width ||
+        baseCanvas.height !== canvas.height ||
+        paintCanvas.width !== canvas.width ||
+        paintCanvas.height !== canvas.height;
+
+    if (!needsRecreate) return true;
+
+    baseCanvas = document.createElement('canvas');
+    baseCanvas.width = canvas.width;
+    baseCanvas.height = canvas.height;
+    baseCtx = baseCanvas.getContext('2d');
+
+    paintCanvas = document.createElement('canvas');
+    paintCanvas.width = canvas.width;
+    paintCanvas.height = canvas.height;
+    paintCtx = paintCanvas.getContext('2d');
+
+    App.baseCanvas = baseCanvas;
+    App.baseCtx = baseCtx;
+    App.paintCanvas = paintCanvas;
+    App.paintCtx = paintCtx;
+
+    return true;
+}
+
+function clearPaintLayer() {
+    if (!ensureLayerCanvases()) return;
+    paintCtx.clearRect(0, 0, paintCanvas.width, paintCanvas.height);
+}
+
+function renderCanvas() {
+    if (!ensureLayerCanvases() || !ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(baseCanvas, 0, 0);
+    ctx.save();
+    ctx.globalAlpha = COLORING_OPACITY;
+    ctx.drawImage(paintCanvas, 0, 0);
+    ctx.restore();
 }
 
 function updateTestTitle() {
@@ -298,22 +350,28 @@ function onWheel(e) {
 }
 
 function drawDot(x, y) {
-    ctx.beginPath();
-    ctx.arc(x, y, App.state.brushSize / 2, 0, Math.PI * 2);
-    ctx.fillStyle = App.state.currentColor;
-    ctx.fill();
+    if (!ensureLayerCanvases()) return;
+
+    paintCtx.beginPath();
+    paintCtx.arc(x, y, App.state.brushSize / 2, 0, Math.PI * 2);
+    paintCtx.fillStyle = App.state.currentColor;
+    paintCtx.fill();
+    renderCanvas();
     App.state.usedColors.add(App.state.currentColor);
 }
 
 function drawLine(x1, y1, x2, y2) {
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.strokeStyle = App.state.currentColor;
-    ctx.lineWidth = App.state.brushSize;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke();
+    if (!ensureLayerCanvases()) return;
+
+    paintCtx.beginPath();
+    paintCtx.moveTo(x1, y1);
+    paintCtx.lineTo(x2, y2);
+    paintCtx.strokeStyle = App.state.currentColor;
+    paintCtx.lineWidth = App.state.brushSize;
+    paintCtx.lineCap = 'round';
+    paintCtx.lineJoin = 'round';
+    paintCtx.stroke();
+    renderCanvas();
     App.state.usedColors.add(App.state.currentColor);
 }
 
@@ -439,8 +497,10 @@ function redo() {
 function restoreState(dataURL) {
     const img = new Image();
     img.onload = function () {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
+        if (!ensureLayerCanvases()) return;
+        clearPaintLayer();
+        paintCtx.drawImage(img, 0, 0);
+        renderCanvas();
     };
     img.src = dataURL;
 }
@@ -950,7 +1010,9 @@ function getRotatedImageData() {
 }
 
 App.saveState = function () {
-    this.state.undoStack.push(canvas.toDataURL());
+    if (!ensureLayerCanvases()) return;
+
+    this.state.undoStack.push(paintCanvas.toDataURL());
     if (this.state.undoStack.length > 20) {
         this.state.undoStack.shift();
     }
@@ -976,8 +1038,10 @@ App.updateUndoRedoButtons = function () {
 };
 
 App.drawImageOnCanvas = function (img) {
-    this.ctx.fillStyle = BACKGROUND_COLOR;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    if (!ensureLayerCanvases()) return;
+
+    this.baseCtx.fillStyle = BACKGROUND_COLOR;
+    this.baseCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     const scale = this.canvas.height / img.height;
     const drawWidth = img.width * scale;
@@ -985,30 +1049,36 @@ App.drawImageOnCanvas = function (img) {
     const offsetX = (this.canvas.width - drawWidth) / 2;
     const offsetY = 0;
 
-    this.ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+    this.baseCtx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
 
     if (offsetX > 0) {
-        this.ctx.fillStyle = BACKGROUND_COLOR;
-        this.ctx.fillRect(0, 0, offsetX, this.canvas.height);
-        this.ctx.fillRect(offsetX + drawWidth, 0, this.canvas.width - (offsetX + drawWidth), this.canvas.height);
+        this.baseCtx.fillStyle = BACKGROUND_COLOR;
+        this.baseCtx.fillRect(0, 0, offsetX, this.canvas.height);
+        this.baseCtx.fillRect(offsetX + drawWidth, 0, this.canvas.width - (offsetX + drawWidth), this.canvas.height);
     }
+
+    clearPaintLayer();
+    renderCanvas();
 };
 
 App.drawPlaceholderImage = function () {
-    if (!this.ctx || !this.canvas) return;
+    if (!this.ctx || !this.canvas || !ensureLayerCanvases()) return;
 
-    this.ctx.fillStyle = BACKGROUND_COLOR;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.baseCtx.fillStyle = BACKGROUND_COLOR;
+    this.baseCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.ctx.font = 'bold 40px Arial';
-    this.ctx.fillStyle = '#9ca3af';
-    this.ctx.textAlign = 'center';
-    this.ctx.textBaseline = 'middle';
-    this.ctx.fillText('Изображение не выбрано', this.canvas.width / 2, this.canvas.height / 2 - 30);
+    this.baseCtx.font = 'bold 40px Arial';
+    this.baseCtx.fillStyle = '#9ca3af';
+    this.baseCtx.textAlign = 'center';
+    this.baseCtx.textBaseline = 'middle';
+    this.baseCtx.fillText('Изображение не выбрано', this.canvas.width / 2, this.canvas.height / 2 - 30);
 
-    this.ctx.font = '20px Arial';
-    this.ctx.fillStyle = '#6b7280';
-    this.ctx.fillText('Вернитесь на страницу настроек', this.canvas.width / 2, this.canvas.height / 2 + 30);
+    this.baseCtx.font = '20px Arial';
+    this.baseCtx.fillStyle = '#6b7280';
+    this.baseCtx.fillText('Вернитесь на страницу настроек', this.canvas.width / 2, this.canvas.height / 2 + 30);
+
+    clearPaintLayer();
+    renderCanvas();
 };
 
 function getInitialScale() {
