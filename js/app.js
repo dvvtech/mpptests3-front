@@ -9,7 +9,8 @@ const appConfig = {
         { id: 2, name: "Тест №2", filename: "images/test2.png", thumbnail: "images/thumbnails/test2_thumb.png" },
         { id: 3, name: "Тест №3", filename: "images/test3.png", thumbnail: "images/thumbnails/test3_thumb.png" },
         { id: 4, name: "Тест №4", filename: "images/test4.png", thumbnail: "images/thumbnails/test4_thumb.png" },
-        { id: 5, name: "Тест №5", filename: "images/test5.png", thumbnail: "images/thumbnails/test5_thumb.png" }
+        { id: 5, name: "Тест №5", filename: "images/test5.png", thumbnail: "images/thumbnails/test5_thumb.png" },
+        { id: 6, name: "Тест №6", filename: "images/test6.png", thumbnail: "images/thumbnails/test6_thumb.png" }
     ],
     colors: [
         { name: "Красный", hex: "#ef4444" },
